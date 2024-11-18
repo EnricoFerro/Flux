@@ -241,6 +241,18 @@ xf.reg('ui:resistance-target-inc', (_, db) => {
 xf.reg(`ui:resistance-target-dec`, (_, db) => {
     db.resistanceTarget = models.resistanceTarget.dec(db.resistanceTarget);
 });
+xf.reg('ui:resistance-target-inc-5', (_, db) => {
+    db.resistanceTarget = models.resistanceTarget.inc(db.resistanceTarget, 5);
+});
+xf.reg(`ui:resistance-target-dec-5`, (_, db) => {
+    db.resistanceTarget = models.resistanceTarget.dec(db.resistanceTarget, 5);
+});
+xf.reg('ui:resistance-target-inc-1', (_, db) => {
+    db.resistanceTarget = models.resistanceTarget.inc(db.resistanceTarget, 1);
+});
+xf.reg(`ui:resistance-target-dec-1`, (_, db) => {
+    db.resistanceTarget = models.resistanceTarget.dec(db.resistanceTarget, 1);
+});
 
 xf.reg('ui:slope-target-set', (slopeTarget, db) => {
     db.slopeTarget = models.slopeTarget.set(slopeTarget);
@@ -251,6 +263,19 @@ xf.reg('ui:slope-target-inc', (_, db) => {
 xf.reg(`ui:slope-target-dec`, (_, db) => {
     db.slopeTarget = models.slopeTarget.dec(db.slopeTarget);
 });
+xf.reg('ui:slope-target-inc-5', (_, db) => {
+    db.slopeTarget = models.slopeTarget.inc(db.slopeTarget, 0.2);
+});
+xf.reg(`ui:slope-target-dec-5`, (_, db) => {
+    db.slopeTarget = models.slopeTarget.dec(db.slopeTarget, 0.2);
+});
+xf.reg('ui:slope-target-inc-1', (_, db) => {
+    db.slopeTarget = models.slopeTarget.inc(db.slopeTarget, 0.1);
+});
+xf.reg(`ui:slope-target-dec-1`, (_, db) => {
+    db.slopeTarget = models.slopeTarget.dec(db.slopeTarget, 0.1);
+});
+
 
 // Profile
 xf.reg('ui:ftp-set', (ftp, db) => {

@@ -109,10 +109,10 @@ function KeyboardControls() {
             xf.dispatch('ui:power-target-inc-5');
         }
         if(mode === ControlMode.resistance) {
-            xf.dispatch('ui:resistance-target-inc');
+            xf.dispatch('ui:resistance-target-inc-5');
         }
         if(mode === ControlMode.sim) {
-            xf.dispatch('ui:slope-target-inc');
+            xf.dispatch('ui:slope-target-inc-5');
         }
     });
     xf.sub('key:down-5', e => {
@@ -120,10 +120,10 @@ function KeyboardControls() {
             xf.dispatch('ui:power-target-dec-5');
         }
         if(mode === ControlMode.resistance) {
-            xf.dispatch('ui:resistance-target-dec');
+            xf.dispatch('ui:resistance-target-dec-5');
         }
         if(mode === ControlMode.sim) {
-            xf.dispatch('ui:slope-target-dec');
+            xf.dispatch('ui:slope-target-dec-5');
         }
     });
     xf.sub('key:up-1', e => {
@@ -131,10 +131,10 @@ function KeyboardControls() {
             xf.dispatch('ui:power-target-inc-1');
         }
         if(mode === ControlMode.resistance) {
-            xf.dispatch('ui:resistance-target-inc');
+            xf.dispatch('ui:resistance-target-inc-1');
         }
         if(mode === ControlMode.sim) {
-            xf.dispatch('ui:slope-target-inc');
+            xf.dispatch('ui:slope-target-inc-1');
         }
     });
     xf.sub('key:down-1', e => {
@@ -142,10 +142,10 @@ function KeyboardControls() {
             xf.dispatch('ui:power-target-dec-1');
         }
         if(mode === ControlMode.resistance) {
-            xf.dispatch('ui:resistance-target-dec');
+            xf.dispatch('ui:resistance-target-dec-1');
         }
         if(mode === ControlMode.sim) {
-            xf.dispatch('ui:slope-target-dec');
+            xf.dispatch('ui:slope-target-dec-1');
         }
     });
 
