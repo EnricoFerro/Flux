@@ -215,14 +215,16 @@ class Target extends Model {
         return clamp(self.min, self.max, self.parse(value));
     }
     parse(value) { return parseInt(value); }
-    inc(value) {
+    inc(value, step) {
         const self = this;
-        const x = value + self.step;
+        step = step === undefined || step === null ? self.step : step;
+        const x = value + step;
         return self.set(x);
     }
-    dec(value) {
+    dec(value, step) {
         const self = this;
-        const x = value - self.step;
+        step = step === undefined || step === null ? self.step : step;
+        const x = value - step;
         return self.set(x);
     }
 }

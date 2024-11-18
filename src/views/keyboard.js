@@ -3,13 +3,17 @@ import { ControlMode, } from '../ble/enums.js';
 
 function Keyboard() {
 
-    const isKeyUp    = (code) => code === 'ArrowUp';
-    const isKeyDown  = (code) => code === 'ArrowDown';
-    const isKeyE     = (code) => code === 'KeyE';
-    const isKeyR     = (code) => code === 'KeyR';
-    const isKeyS     = (code) => code === 'KeyS';
-    const isKeyL     = (code) => code === 'KeyL';
-    const isKeySpace = (code) => code === 'Space';
+    const isKeyUp        = (code) => code === 'ArrowUp';
+    const isKeyDown      = (code) => code === 'ArrowDown';
+    const isKeyPageUp    = (code) => code === 'PageUp';
+    const isKeyPageDown  = (code) => code === 'PageDown';
+    const isKeyAdd       = (code) => code === 'NumpadAdd';
+    const isKeySubtract  = (code) => code === 'NumpadSubtract';
+    const isKeyE         = (code) => code === 'KeyE';
+    const isKeyR         = (code) => code === 'KeyR';
+    const isKeyS         = (code) => code === 'KeyS';
+    const isKeyL         = (code) => code === 'KeyL';
+    const isKeySpace     = (code) => code === 'Space';
 
     window.addEventListener('keydown', onKeydown.bind(this));
 
@@ -18,7 +22,7 @@ function Keyboard() {
         let code = e.code;
 
         if (e.isComposing ||
-            keyCode === 229 ||
+            keyCode === 229 ||  
             e.ctrlKey ||
             e.shiftKey ||
             e.altKey ||
@@ -28,11 +32,27 @@ function Keyboard() {
 
         if(isKeyUp(code)) {
             e.preventDefault();
-            xf.dispatch('key:up');
+            xf.dispatch('key:up-5');
         }
         if(isKeyDown(code)) {
             e.preventDefault();
-            xf.dispatch('key:down');
+            xf.dispatch('key:down-5');
+        }
+        if(isKeyPageUp(code)) {
+            e.preventDefault();
+            xf.dispatch('key:up-10');
+        }
+        if(isKeyPageDown(code)) {
+            e.preventDefault();
+            xf.dispatch('key:down-10');
+        }
+        if(isKeyAdd(code)) {
+            e.preventDefault();
+            xf.dispatch('key:up-1');
+        }
+        if(isKeySubtract(code)) {
+            e.preventDefault();
+            xf.dispatch('key:down-1');
         }
         if(isKeyS(code)) {
             xf.dispatch('key:s');
@@ -62,7 +82,7 @@ function KeyboardControls() {
     xf.sub('db:watchStatus', x => watchStatus = x);
 
     // Modes Inc/Dec
-    xf.sub('key:up', e => {
+    xf.sub('key:up-10', e => {
         if(mode === ControlMode.erg) {
             xf.dispatch('ui:power-target-inc');
         }
@@ -73,9 +93,53 @@ function KeyboardControls() {
             xf.dispatch('ui:slope-target-inc');
         }
     });
-    xf.sub('key:down', e => {
+    xf.sub('key:down-10', e => {
         if(mode === ControlMode.erg) {
             xf.dispatch('ui:power-target-dec');
+        }
+        if(mode === ControlMode.resistance) {
+            xf.dispatch('ui:resistance-target-dec');
+        }
+        if(mode === ControlMode.sim) {
+            xf.dispatch('ui:slope-target-dec');
+        }
+    });
+    xf.sub('key:up-5', e => {
+        if(mode === ControlMode.erg) {
+            xf.dispatch('ui:power-target-inc-5');
+        }
+        if(mode === ControlMode.resistance) {
+            xf.dispatch('ui:resistance-target-inc');
+        }
+        if(mode === ControlMode.sim) {
+            xf.dispatch('ui:slope-target-inc');
+        }
+    });
+    xf.sub('key:down-5', e => {
+        if(mode === ControlMode.erg) {
+            xf.dispatch('ui:power-target-dec-5');
+        }
+        if(mode === ControlMode.resistance) {
+            xf.dispatch('ui:resistance-target-dec');
+        }
+        if(mode === ControlMode.sim) {
+            xf.dispatch('ui:slope-target-dec');
+        }
+    });
+    xf.sub('key:up-1', e => {
+        if(mode === ControlMode.erg) {
+            xf.dispatch('ui:power-target-inc-1');
+        }
+        if(mode === ControlMode.resistance) {
+            xf.dispatch('ui:resistance-target-inc');
+        }
+        if(mode === ControlMode.sim) {
+            xf.dispatch('ui:slope-target-inc');
+        }
+    });
+    xf.sub('key:down-1', e => {
+        if(mode === ControlMode.erg) {
+            xf.dispatch('ui:power-target-dec-1');
         }
         if(mode === ControlMode.resistance) {
             xf.dispatch('ui:resistance-target-dec');

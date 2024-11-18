@@ -216,6 +216,18 @@ xf.reg('ui:power-target-inc', (_, db) => {
 xf.reg(`ui:power-target-dec`, (_, db) => {
     db.powerTarget = models.powerTarget.dec(db.powerTarget);
 });
+xf.reg('ui:power-target-inc-5', (_, db) => {
+    db.powerTarget = models.powerTarget.inc(db.powerTarget, 5);
+});
+xf.reg(`ui:power-target-dec-5`, (_, db) => {
+    db.powerTarget = models.powerTarget.dec(db.powerTarget, 5);
+});
+xf.reg('ui:power-target-inc-1', (_, db) => {
+    db.powerTarget = models.powerTarget.inc(db.powerTarget, 1);
+});
+xf.reg(`ui:power-target-dec-1`, (_, db) => {
+    db.powerTarget = models.powerTarget.dec(db.powerTarget, 1);
+});
 xf.reg('ui:cadence-target-set', (cadenceTarget, db) => {
     db.cadenceTarget = models.cadenceTarget.set(cadenceTarget);
 });
