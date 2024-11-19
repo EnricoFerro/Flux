@@ -3,23 +3,23 @@ import { ControlMode, } from '../ble/enums.js';
 
 function Keyboard() {
 
-    const isKeyUp        = (code) => code === 'ArrowUp';
-    const isKeyDown      = (code) => code === 'ArrowDown';
-    const isKeyPageUp    = (code) => code === 'PageUp';
-    const isKeyPageDown  = (code) => code === 'PageDown';
-    const isKeyAdd       = (code) => code === 'NumpadAdd';
-    const isKeySubtract  = (code) => code === 'NumpadSubtract';
-    const isKeyE         = (code) => code === 'KeyE';
-    const isKeyR         = (code) => code === 'KeyR';
-    const isKeyS         = (code) => code === 'KeyS';
-    const isKeyL         = (code) => code === 'KeyL';
-    const isKeySpace     = (code) => code === 'Space';
+    const isKeyUp        = (key) => key === 'ArrowUp';
+    const isKeyDown      = (key) => key === 'ArrowDown';
+    const isKeyPageUp    = (key) => key === 'PageUp';
+    const isKeyPageDown  = (key) => key === 'PageDown';
+    const isKeyAdd       = (key) => key === '+';
+    const isKeySubtract  = (key) => key === '-';
+    const isKeyE         = (key) => key === 'E' || key === 'e' ;
+    const isKeyR         = (key) => key === 'R' || key === 'r' ;
+    const isKeyS         = (key) => key === 'S' || key === 's' ;
+    const isKeyL         = (key) => key === 'L' || key === 'l' ;
+    const isKeySpace     = (key) => key === ' ';
 
     window.addEventListener('keydown', onKeydown.bind(this));
 
     function onKeydown(e) {
         let keyCode = e.keyCode;
-        let code = e.code;
+        let key = e.key;
 
         if (e.isComposing ||
             keyCode === 229 ||  
@@ -30,43 +30,43 @@ function Keyboard() {
             return;
         }
 
-        if(isKeyUp(code)) {
-            e.preventDefault();
-            xf.dispatch('key:up-5');
-        }
-        if(isKeyDown(code)) {
-            e.preventDefault();
-            xf.dispatch('key:down-5');
-        }
-        if(isKeyPageUp(code)) {
+        if(isKeyUp(key)) {
             e.preventDefault();
             xf.dispatch('key:up-10');
         }
-        if(isKeyPageDown(code)) {
+        if(isKeyDown(key)) {
             e.preventDefault();
             xf.dispatch('key:down-10');
         }
-        if(isKeyAdd(code)) {
+        if(isKeyPageUp(key)) {
+            e.preventDefault();
+            xf.dispatch('key:up-5');
+        }
+        if(isKeyPageDown(key)) {
+            e.preventDefault();
+            xf.dispatch('key:down-5');
+        }
+        if(isKeyAdd(key)) {
             e.preventDefault();
             xf.dispatch('key:up-1');
         }
-        if(isKeySubtract(code)) {
+        if(isKeySubtract(key)) {
             e.preventDefault();
             xf.dispatch('key:down-1');
         }
-        if(isKeyS(code)) {
+        if(isKeyS(key)) {
             xf.dispatch('key:s');
         }
-        if(isKeyR(code)) {
+        if(isKeyR(key)) {
             xf.dispatch('key:r');
         }
-        if(isKeyE(code)) {
+        if(isKeyE(key)) {
             xf.dispatch('key:e');
         }
-        if(isKeyL(code)) {
+        if(isKeyL(key)) {
             xf.dispatch('key:l');
         }
-        if(isKeySpace(code)) {
+        if(isKeySpace(key)) {
             e.preventDefault();
             xf.dispatch('key:space');
         }
