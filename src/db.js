@@ -3,6 +3,7 @@ import { models } from './models/models.js';
 import { Sound } from './sound.js';
 import { idb } from './storage/idb.js';
 import { ControlMode, } from './ble/enums.js';
+import { TimerStatus, } from './activity/enums.js';
 
 // import { trainerMock } from './simulation-scripts.js';
 
@@ -63,10 +64,14 @@ let db = {
     powerSmoothing: 0,
     dataTileSwitch: models.dataTileSwitch.default,
     librarySwitch: 0,
+    auth: ':login',
 
     // Workouts
     workouts: [],
     workout: models.workout.default,
+
+    // Activities
+    activity: models.activity.default,
 
     // Recording
     records: [],
@@ -83,8 +88,8 @@ let db = {
     stepIndex: 0,
     intervalDuration: 0,
     stepDuration: 0,
-    watchStatus: 'stopped',
-    workoutStatus: 'stopped',
+    watchStatus: TimerStatus.stopped,
+    workoutStatus: TimerStatus.stopped,
 
     // Course
     courseIndex: 0,
@@ -92,6 +97,9 @@ let db = {
     // Request ANT+ Device
     antSearchList: [],
     antDeviceId: {},
+
+    // Services
+    services: {strava: false, intervals: false},
 };
 
 xf.create(db);
@@ -318,15 +326,25 @@ xf.reg('ui:workout:select', (id, db) => {
 xf.reg('ui:workout:remove', (id, db) => {
     db.workouts = models.workouts.remove(db.workouts, id);
 });
-xf.reg('ui:workout:upload', async function(file, db) {
-    const { result, name } = await models.workout.readFromFile(file);
-    const workout = models.workout.parse(result, name);
-    models.workouts.add(db.workouts, workout);
-    xf.dispatch('db:workouts', db);
+xf.reg('ui:workout:upload', async function(files, db) {
+    for(let file of Object.values(files)) {
+        const { result, name } = await models.workout.readFromFile(file);
+        const workout = models.workout.parse(result, name);
+        models.workouts.add(db.workouts, workout);
+        xf.dispatch('db:workouts', db);
+    }
+
 });
+xf.reg('watch:stopped', (_, db) => {
+    models.activity.createFromCurrent(db);
+});
+xf.sub('ui:activity:upload:by:id', (id) => {
+    models.activity.upload(id);
+});
+// download the current activity as a .fit file
 xf.reg('ui:activity:save', (_, db) => {
     try {
-        models.workout.save(db);
+        models.workout.download(db);
         xf.dispatch('activity:save:success');
     } catch (err) {
         console.error(`Error on activity save: `, err);
@@ -381,35 +399,15 @@ xf.reg(`ant:search:stopped`, (x, db) => {
     db.antSearchList = [];
 });
 
+xf.reg('auth', (x, db) => {
+    console.log(`xf.reg('auth') `, x);
+});
 
-// API
-function SignUp() {
-    const url = "http://localhost:8080/api/sign_up";
-    const $form = document.querySelector("#signup--form");
-    $form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        submit();
-    });
+xf.reg('services', (x, db) => {
+    console.log(`services `, x);
+    db.services = Object.assign(db.services, x);
+});
 
-    async function submit() {
-        const formData = new FormData($form);
-
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(Object.fromEntries(formData)),
-            });
-
-            const result = await response.json();
-        } catch(error) {
-            console.log(error);
-        }
-    }
-}
-// END API
 
 //
 xf.reg('app:start', async function(_, db) {
@@ -423,15 +421,15 @@ xf.reg('app:start', async function(_, db) {
 
     db.sources = models.sources.set(models.sources.restore());
 
-    // IndexedDB Schema Version 1
-    // await idb.start('store', 1, ['session']);
-    // IndexedDB Schema Version 2
-    await idb.start('store', 2, ['session', 'workouts']);
+    // IndexedDB Schema Version 3
+    await idb.start('store', 3, ['session', 'workouts', 'activity']);
     db.workouts = await models.workouts.restore();
+    db.activity = await models.activity.restore();
     db.workout = models.workout.restore(db);
 
     await models.session.restore(db);
     xf.dispatch('workout:restore');
+    xf.dispatch('activity:restore');
 
     models.kcal.restore(db);
     models.powerLap.restore(db);
@@ -444,9 +442,11 @@ xf.reg('app:start', async function(_, db) {
     const sound = Sound({volume: db.volume});
     sound.start();
 
-    // SignUp();
+    models.api.start();
+
     // TRAINER MOCK
     // trainerMock.init();
+    // models.activity.test();
 });
 
 function start () {
@@ -470,3 +470,4 @@ function start () {
 start();
 
 export { db };
+

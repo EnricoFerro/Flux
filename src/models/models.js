@@ -8,6 +8,7 @@ import { LocalStorageItem } from '../storage/local-storage.js';
 import { idb } from '../storage/idb.js';
 import { uuid } from '../storage/uuid.js';
 
+import API from './api.js';
 import { workouts as workoutsFile }  from '../workouts/workouts.js';
 import { zwo } from '../workouts/zwo.js';
 import { fileHandler } from '../file.js';
@@ -482,9 +483,126 @@ class DataTileSwitch extends Model {
     }
 }
 
+
+class Activity extends Model {
+    // [
+    //     {
+    //         id: UUID, timestamp: Int, duration: Int, status: {
+    //             strava: String,
+    //             intervals: String
+    //         },
+    //     },
+    // ]
+    name = 'activity';
+    postInit(args) {
+        this.api = args.api;
+        this.capacity = 3;
+    }
+    defaultValue() { return []; }
+    createFromCurrent(db) {
+        const id = uuid();
+        const blob = fileHandler.toBlob(this.encode(db));
+
+        const summary = {
+            id,
+            timestamp: Date.now(),
+            duration: db.elapsed ?? 0,
+            status: {strava: 'none', intervals: 'none'},
+        };
+        const record = {
+            id,
+            blob,
+            summary,
+        };
+
+        this.add(summary, db.activity);
+        idb.put('activity', record);
+        xf.dispatch('activity:add', summary);
+    }
+    add(activity, activityList) {
+        activityList.unshift(activity);
+        if(activityList.length > this.capacity) {
+            const summary = activityList.pop();
+            idb.remove('activity', summary.id);
+        }
+        return activityList;
+    }
+    async upload(service, id) {
+        const record = await idb.get('activity', id);
+        if(service === 'strava') {
+            const res = await this.api.strava.uploadWorkout(record.blob);
+            // TODO: fix
+            // const res = Math.random() < 0.5 ? ':fail' : ':success';
+            record.summary.status.strava = res.substring(1);
+            await idb.put('activity', record);
+
+            if(res === ':success') {
+                xf.dispatch(`action:activity:${id}`, `:strava:upload:success`);
+            } else {
+                xf.dispatch(`action:activity:${id}`, `:strava:upload:fail`);
+            }
+            return;
+        }
+        if(service === 'intervals') {
+            const res = await this.api.intervals.uploadWorkout(record.blob);
+            record.summary.status.intervals = res.substring(1);
+            await idb.put('activity', record);
+
+            if(res === ':success') {
+                xf.dispatch(`action:activity:${id}`, `:intervals:upload:success`);
+            } else {
+                xf.dispatch(`action:activity:${id}`, `:intervals:upload:fail`);
+            }
+            return;
+        }
+    }
+    async download(id) {
+        const self = this;
+        const record = await idb.get('activity', id);
+        fileHandler.download()(
+            record.blob,
+            self.fileName(record.summary.timestamp),
+            fileHandler.Type.OctetStream
+        );
+    }
+    fileName(timestamp) {
+        return `workout-${dateToDashString(new Date(timestamp))}.fit`;
+    }
+    encode(db) {
+        const records = db.records;
+        const laps = db.laps;
+        const events = db.events;
+
+        return fit.localActivity.encode({
+            records,
+            laps,
+            events,
+        });
+    }
+    async restore() {
+        const records = await idb.getAll('activity') ?? [];
+
+        // migrate summary.status String to {strava: String, intervals: String}
+        records.forEach((record) => {
+            if(typeof record.summary.status === 'string') {
+                console.log(`:activity :migrating `, record.id);
+                record.summary.status = {strava: 'none', intervals: 'none'};
+                idb.put('activity', record);
+            }
+        });
+
+        return records
+            .map((record) => record.summary)
+            .sort((a, b) => b.timestamp - a.timestamp);
+    }
+}
+
+// TODO: This is a cross between the current active workout and the currently recorded
+// activity. It's not a workout in the workout list. It needs to be split in the future
 class Workout extends Model {
     postInit(args) {
         const self = this;
+        self.api = args.api;
     }
     defaultValue() { return this.parse((first(workoutsFile))); }
     defaultIsValid(value) {
@@ -507,25 +625,12 @@ class Workout extends Model {
         return zwo.readToInterval(result);
     }
     fileName () {
-        const self = this;
-        const now = new Date();
-        return `workout-${dateToDashString(now)}.fit`;
-    }
-    toFitRecords(db) {
-        return db.records;
-    }
-    toFitLaps(db) {
-        return db.laps;
-    }
-    toFitEvents(db) {
-        return db.events;
+        return `workout-${dateToDashString(new Date())}.fit`;
     }
     encode(db) {
-        const self = this;
-
-        const records = self.toFitRecords(db);
-        const laps = self.toFitLaps(db);
-        const events = self.toFitEvents(db);
+        const records = db.records;
+        const laps = db.laps;
+        const events = db.events;
 
         return fit.localActivity.encode({
             records,
@@ -533,14 +638,19 @@ class Workout extends Model {
             events,
         });
     }
-    download(activity) {
-        const self = this;
-        const blob = new Blob([activity], {type: 'application/octet-stream'});
-        fileHandler.saveFile()(blob, self.fileName());
+    download(db) {
+        fileHandler.download()(this.encode(db), this.fileName(), fileHandler.Type.OctetStream);
     }
-    save(db) {
-        const self = this;
-        self.download(self.encode(db));
+    send(db) {
+        const name = this.fileName();
+        const blob = fileHandler.toBlob(this.encode(db));
+
+        this.api.strava.uploadWorkout(blob);
+
+        return {
+            name,
+            blob,
+        };
     }
 }
 
@@ -1149,6 +1259,7 @@ class TSS {
 }
 
 
+const api = API();
 
 const power = new Power({prop: 'power'});
 const cadence = new Cadence({prop: 'cadence'});
@@ -1178,7 +1289,8 @@ const dataTileSwitch = new DataTileSwitch({prop: 'dataTileSwitch', storage: Loca
 const power1s = new PropInterval({prop: 'db:power', effect: 'power1s', interval: 1000});
 const powerInZone = new PowerInZone({ftpModel: ftp});
 
-const workout = new Workout({prop: 'workout'});
+const activity = new Activity({prop: 'activity', api: api});
+const workout = new Workout({prop: 'workout', api: api});
 const workouts = new Workouts({prop: 'workouts', workoutModel: workout});
 
 const session = Session();
@@ -1220,11 +1332,14 @@ let models = {
     measurement,
     dataTileSwitch,
 
+    activity,
     workout,
     workouts,
     session,
 
     PropInterval,
+
+    api,
 };
 
 export { models };

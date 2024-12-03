@@ -8,10 +8,10 @@ function formatTime(args = {}) {
     };
 
     const value  = args.value;
-    const format = existance(args.format, defaults.format);
-    const unit   = existance(args.unit, defaults.unit);
+    const format = args.format ?? defaults.format;
+    const unit   = args.unit ?? defaults.unit;
 
-    if(equals(unit, 'seconds')) {
+    if(unit === 'seconds') {
         let hour = Math.floor(value / 3600);
         let min  = Math.floor(value % 3600 / 60);
         let sec  = value % 60;
@@ -21,10 +21,10 @@ function formatTime(args = {}) {
         let hDs  = (hour < 10) ? `${hour}`  : `${hour}`;
         let res  = ``;
 
-        if(equals(format, 'hh:mm:ss')) {
+        if(format === 'hh:mm:ss') {
             res = `${hD}:${mD}:${sD}`;
         }
-        if(equals(format, 'mm:ss')) {
+        if(format === 'mm:ss') {
             if(value < 3600) {
                 res = `${mD}:${sD}`;
             } else {
@@ -54,6 +54,12 @@ function time() {
     const seconds = (date.getSeconds()).toString().padStart(2,'0');
     const milliseconds = (date.getSeconds().toString()).padStart(4,'0');
     return `${hours}:${minutes}:${seconds}:${milliseconds}`;
+}
+
+function isoDate(date = new Date()) {
+    const offset = date.getTimezoneOffset();
+    const d = new Date(date.getTime() - (offset*60*1000));
+    return date.toISOString().split('T')[0];
 }
 
 function format(x, precision = 1000) {
@@ -281,6 +287,7 @@ export {
     // format
     formatTime,
     dateToDashString,
+    isoDate,
     format,
     kphToMps,
     mpsToKph,

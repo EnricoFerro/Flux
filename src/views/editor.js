@@ -684,7 +684,7 @@ class WorkoutEditor extends HTMLElement {
         const file = this.editor.format({format: 'zwo'});
         const name = `${this.editor.getName()}.zwo`;
         console.log(file);
-        fileHandler.saveFile()(new Blob([file], {type: 'text/plain'}), name);
+        fileHandler.download()(file, name, fileHandler.Type.TextPlain);
     }
 }
 

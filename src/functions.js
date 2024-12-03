@@ -555,6 +555,17 @@ function time() {
     return `${mm}:${ss}:${mmmm}`;
 }
 
+function formatDate(args = {}) {
+    const date = args.date ?? new Date();
+    const s = args.separator ?? '/';
+
+    const day    = (date.getDate()).toString().padStart(2, '0');
+    const month  = (date.getMonth()+1).toString().padStart(2, '0');
+    const year   = date.getFullYear().toString();
+
+    return `${day}${s}${month}${s}${year}`;
+}
+
 // Bits
 function nthBit(field, bit) {
     return (field >> bit) & 1;
@@ -745,6 +756,7 @@ export {
     arrayBufferToArray,
     stringToCharCodes,
     time,
+    formatDate,
     print,
     Spec,
 

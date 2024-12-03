@@ -5,6 +5,10 @@ class Watch extends HTMLElement {
         super();
     }
     connectedCallback() {
+        const self = this;
+        this.abortController = new AbortController();
+        this.signal = { signal: self.abortController.signal };
+
         this.dom = {
             start:   document.querySelector('#watch-start'),
             pause:   document.querySelector('#watch-pause'),
@@ -14,28 +18,20 @@ class Watch extends HTMLElement {
             // workout: document.querySelector('#start-workout'),
         };
 
-        this.dom.start.addEventListener('pointerup', this.onStart);
-        this.dom.pause.addEventListener('pointerup', this.onPause);
-        this.dom.lap.addEventListener('pointerup', this.onLap);
-        this.dom.stop.addEventListener('pointerup', this.onStop);
+        this.dom.start.addEventListener('pointerup', this.onStart, this.signal);
+        this.dom.pause.addEventListener('pointerup', this.onPause, this.signal);
+        this.dom.lap.addEventListener('pointerup', this.onLap, this.signal);
+        this.dom.stop.addEventListener('pointerup', this.onStop, this.signal);
         // this.dom.workout.addEventListener('pointerup', this.onWorkoutStart);
-        this.dom.save.addEventListener(`pointerup`, this.onSave);
+        this.dom.save.addEventListener(`pointerup`, this.onSave, this.signal);
 
         this.renderInit(this.dom);
 
-        xf.sub(`db:watchStatus`, this.onWatchStatus.bind(this));
-        xf.sub(`db:workoutStatus`, this.onWorkoutStatus.bind(this));
-
+        xf.sub(`db:watchStatus`, this.onWatchStatus.bind(this), this.signal);
+        xf.sub(`db:workoutStatus`, this.onWorkoutStatus.bind(this), this.signal);
     }
     disconnectedCallback() {
-       this.dom.start.removeEventListener(`pointerup`, this.onStart);
-       this.dom.pause.removeEventListener(`pointerup`, this.onPause);
-       this.dom.lap.removeEventListener(`pointerup`, this.onLap);
-       this.dom.stop.removeEventListener(`pointerup`, this.onStop);
-       // this.dom.workout.removeEventListener(`pointerup`, this.onWorkoutStart);
-       this.dom.save.removeEventListener(`pointerup`, this.onSave);
-       document.removeEventListener(`db:watchStatus`, this.onWatchStatus);
-       document.removeEventListener(`db:workoutStatus`, this.onWorkoutStatus);
+        this.abortController.abort();
     }
     onStart(e) {
         xf.dispatch('ui:watchStart');
