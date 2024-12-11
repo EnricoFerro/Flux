@@ -3,6 +3,7 @@ import { OAuthService, DialogMsg, stateParam, } from './enums.js';
 import { uuid } from '../storage/uuid.js';
 import Strava from './strava.js';
 import Intervals from './intervals.js';
+import TrainingPeaks from './training-peaks.js';
 import Auth from './auth.js';
 
 function Config() {
@@ -13,6 +14,7 @@ function Config() {
             PWA_URI: "http://localhost:1234",
             STRAVA_CLIENT_ID: 0,
             INTERVALS_CLIENT_ID: 0,
+            TRAINING_PEAKS_CLIENT_ID: 0,
         }
     };
 
@@ -21,6 +23,7 @@ function Config() {
         PWA_URI: process.env.PWA_URI,
         STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,
         INTERVALS_CLIENT_ID: process.env.INTERVALS_CLIENT_ID,
+        TRAINING_PEAKS_CLIENT_ID: process.env.TRAINING_PEAKS_CLIENT_ID,
     };
 }
 
@@ -33,13 +36,13 @@ function API() {
     const pwa_uri = config.PWA_URI;
     const strava_client_id = config.STRAVA_CLIENT_ID;
     const intervals_client_id = config.INTERVALS_CLIENT_ID;
+    const training_peaks_client_id = config.TRAINING_PEAKS_CLIENT_ID;
 
     const auth = Auth({config});
-
-
     const strava = Strava({config});
     const intervals = Intervals({config});
-    const router = Router({handlers: {strava, intervals, auth}});
+    const trainingPeaks = TrainingPeaks({config});
+    const router = Router({handlers: {strava, intervals, trainingPeaks, auth}});
 
     function start() {
         router.start();
@@ -52,6 +55,7 @@ function API() {
         auth,
         strava,
         intervals,
+        trainingPeaks,
         start,
         stop,
     });
@@ -61,6 +65,7 @@ function API() {
 function Router(args = {}) {
     const strava = args.handlers.strava;
     const intervals = args.handlers.intervals;
+    const trainingPeaks = args.handlers.trainingPeaks;
     const auth = args.handlers.auth;
 
     async function start() {
@@ -74,8 +79,6 @@ function Router(args = {}) {
             // TODO: remove
             // get list of planned events once per period
             if(status.intervals) {
-                console.log('INTERVALS');
-                intervals.listEventsMock();
             }
         }
         return;

@@ -192,19 +192,19 @@ function Auth(args = {}) {
             if(status === 403) {
                 console.log(`:api :no-auth`);
                 xf.dispatch('action:auth', ':password:login');
-                return {strava: false, intervals: false};
+                return {strava: false, intervals: false, trainingPeaks: false};
             }
             if(status === 500 || status === 405) {
                 console.log(`:api :no-api`);
                 xf.dispatch('action:auth', ':no-api');
-                return {strava: false, intervals: false};
+                return {strava: false, intervals: false, trainingPeaks: false};
             }
 
-            return {strava: false, intervals: false};
+            return {strava: false, intervals: false, trainingPeaks: false};
         } catch(error) {
             console.log(`:api :no-api`);
             xf.dispatch('action:auth', ':no-api');
-            return {strava: false, intervals: false};
+            return {strava: false, intervals: false, trainingPeaks: false};
         }
     }
 

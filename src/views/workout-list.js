@@ -36,7 +36,7 @@ function workoutTemplate(workout) {
     if(workout.meta.distance) {
         duration = `${(workout.meta.distance / 1000).toFixed(2)} km`;
     }
-    return `<li is="workout-item" class='workout cf' id="${workout.id}" metric="ftp">
+    return `<workout-item class='workout cf' id="${workout.id}" metric="ftp">
                 <div class="workout--info">
                     <div class="workout--short-info">
                         <div class="workout--summary">
@@ -56,10 +56,10 @@ function workoutTemplate(workout) {
                 <div class="workout--actions">
                     <span class="workout--remove">Delete</span>
                 </div>
-            </li>`;
+            </workout-item>`;
 }
 
-class WorkoutList extends HTMLUListElement {
+class WorkoutList extends HTMLElement {
     constructor() {
         super();
         this.state = [];
@@ -142,16 +142,14 @@ class WorkoutList extends HTMLUListElement {
 
 
 
-class WorkoutListItem extends HTMLLIElement {
+class WorkoutListItem extends HTMLElement {
     constructor() {
         super();
         this.state = '';
-        this.postInit();
         this.isExpanded = false;
         this.isSelected = false;
         this.optionsActive = false;
     }
-    postInit() { return; }
     connectedCallback() {
         const self = this;
         this.infoCont = this.querySelector('.workout--info');
@@ -173,10 +171,9 @@ class WorkoutListItem extends HTMLLIElement {
         };
 
         this.dom = {};
-        this.dom.info = this.querySelector('#graph--info--cont');
+        this.dom.info = this.querySelector('.graph--info--cont');
         this.dom.cont = this.querySelector('.workout-list--graph-cont');
         this.viewPort = this.getViewPort();
-
 
         xf.sub('db:workout', this.onWorkout.bind(this), this.signal);
         this.summary.addEventListener('pointerup', this.toggleExpand.bind(this), this.signal);
@@ -309,6 +306,14 @@ class WorkoutListItem extends HTMLLIElement {
     }
 }
 
-customElements.define('workout-list', WorkoutList, {extends: 'ul'});
-customElements.define('workout-item', WorkoutListItem, {extends: 'li'});
+customElements.define('workout-list', WorkoutList);
+customElements.define('workout-item', WorkoutListItem);
+
+export {
+    radioOff,
+    radioOn,
+    removeBtn,
+    options,
+    workoutTemplate,
+};
 

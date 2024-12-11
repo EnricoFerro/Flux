@@ -7,6 +7,7 @@ import { g } from './graph.js';
 
 function powerToHeight(power, powerMax, viewPort) {
     const height = translate(power, 0, powerMax, 0, viewPort.height * 0.90);
+    // console.log(`${viewPort.height} -> ${height}`);
     if(height < (viewPort.height * 0.10)) {
         return viewPort.height * 0.14;
     }
@@ -68,7 +69,7 @@ function intervalsToGraph(workout, ftp, viewPort) {
         }
 
         return '';
-    }, '<div id="graph--info--cont"></div>');
+    }, '<div class="graph--info--cont"></div>');
 }
 
 function renderInfo(args = {}) {
@@ -91,7 +92,7 @@ function renderInfo(args = {}) {
     const width  = dom.info.getBoundingClientRect().width;
     const height = dom.info.getBoundingClientRect().height;
     const minHeight = (bottom + height + (40)); // fix 40
-    dom.info.style.left   = `min(${contWidth}px - ${width}px, ${left}px)`;
+    dom.info.style.left = `min(${contWidth}px - ${width}px, ${left}px)`;
 
     if(window.innerHeight > minHeight) {
         dom.info.style.bottom = bottom;
@@ -261,7 +262,7 @@ class WorkoutGraph extends HTMLElement {
             this.innerHTML = progress +
                 intervalsToGraph(this.workout, this.ftp, this.viewPort);
 
-            this.dom.info      = this.querySelector('#graph--info--cont');
+            this.dom.info      = this.querySelector('.graph--info--cont');
             this.dom.progress  = this.querySelector('#progress');
             this.dom.active    = this.querySelector('#progress-active');
             this.dom.intervals = this.querySelectorAll('.graph--bar-group');
@@ -274,7 +275,7 @@ class WorkoutGraph extends HTMLElement {
             this.innerHTML = progress +
                 courseToGraph(this.workout, this.viewPort);
 
-            this.dom.info     = this.querySelector('#graph--info--cont');
+            this.dom.info     = this.querySelector('.graph--info--cont');
             this.dom.progress = this.querySelector('#progress');
             this.dom.active   = this.querySelector('#progress-active');
         }
@@ -343,7 +344,7 @@ function courseToGraph(course, viewPort) {
           `<altitude-value class="elevation--value altitude--value">${altitudeSpec.start ?? '--'}</altitude-value>
         <ascent-value class="elevation--value ascent--value">0.0</ascent-value>`;
 
-    return `${display}<div id="graph--info--cont"></div><svg class="graph--bar-group" width="100%" height="100%" viewBox="0 0 ${viewBox.width} ${viewBox.height}" preserveAspectRatio="xMinYMax meet">${track}</svg>`;
+    return `${display}<div class="graph--info--cont"></div><svg class="graph--bar-group" width="100%" height="100%" viewBox="0 0 ${viewBox.width} ${viewBox.height}" preserveAspectRatio="xMinYMax meet">${track}</svg>`;
 }
 
 export {

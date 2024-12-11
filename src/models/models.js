@@ -340,7 +340,7 @@ class FTP extends Model {
     }
     toAbsolute(value, ftp) {
         const self = this;
-        if(value < self.minAbsValue) return parseInt(value * ftp);
+        if(value < self.minAbsValue) return parseInt(value * (ftp ?? self.state));
         return value;
     }
     powerToZone(value, ftp, zones) {
@@ -529,32 +529,22 @@ class Activity extends Model {
     }
     async upload(service, id) {
         const record = await idb.get('activity', id);
-        if(service === 'strava') {
-            const res = await this.api.strava.uploadWorkout(record.blob);
-            // TODO: fix
-            // const res = Math.random() < 0.5 ? ':fail' : ':success';
-            record.summary.status.strava = res.substring(1);
+
+        if(service === 'strava' ||
+           service === 'intervals' ||
+           service === 'trainingPeaks') {
+
+            const res = await this.api[service].uploadWorkout(record.blob);
+            record.summary.status[service] = res.substring(1);
             await idb.put('activity', record);
 
             if(res === ':success') {
-                xf.dispatch(`action:activity:${id}`, `:strava:upload:success`);
+                xf.dispatch(`action:activity:${id}`, `:${service}:upload:success`);
             } else {
-                xf.dispatch(`action:activity:${id}`, `:strava:upload:fail`);
+                xf.dispatch(`action:activity:${id}`, `:${service}:upload:fail`);
             }
-            return;
         }
-        if(service === 'intervals') {
-            const res = await this.api.intervals.uploadWorkout(record.blob);
-            record.summary.status.intervals = res.substring(1);
-            await idb.put('activity', record);
-
-            if(res === ':success') {
-                xf.dispatch(`action:activity:${id}`, `:intervals:upload:success`);
-            } else {
-                xf.dispatch(`action:activity:${id}`, `:intervals:upload:fail`);
-            }
-            return;
-        }
+        return;
     }
     async download(id) {
         const self = this;
@@ -597,13 +587,18 @@ class Activity extends Model {
     }
 }
 
-// TODO: This is a cross between the current active workout and the currently recorded
-// activity. It's not a workout in the workout list. It needs to be split in the future
+// TODO:
+// - differentiate between Workout and Activity
+// - this model should hold methods related to working on a Workout as memeber of the
+//   workout list or as the current selected workout
+// - Activity is about the current active recording, session, and the list of actities
+//   which are just recorded data or .fit format, Workout is about .zwo format
 class Workout extends Model {
-    postInit(args) {
+    postInit(args = {}) {
         const self = this;
         self.api = args.api;
     }
+    // state init
     defaultValue() { return this.parse((first(workoutsFile))); }
     defaultIsValid(value) {
         return exists(value);
@@ -611,10 +606,17 @@ class Workout extends Model {
     restore(db) {
         return first(db.workouts);
     }
-    async readFromFile(file) {
-        const result = await fileHandler.read(file);
-        return {result, name: file.name};
+    // accessors
+    find(workouts, id) {
+        for(let workout of workouts) {
+            if(equals(workout.id, id)) {
+                return workout;
+            }
+        }
+        console.error(`tring to get a missing workout: ${id}`, workouts);
+        return first(workouts);
     }
+    // parsers
     parse(result, name = '') {
         if(isArray(result) || isObject(result)) {
             const view = new DataView(result);
@@ -624,8 +626,19 @@ class Workout extends Model {
         }
         return zwo.readToInterval(result);
     }
-    fileName () {
-        return `workout-${dateToDashString(new Date())}.fit`;
+    fromIntervalsEvent(event) {
+        const workout = this.parse(atob(event.workout_file_base64));
+        workout.meta.planned = true;
+        workout.id = uuid();
+        workout.intervals_id = event.id;
+        return workout;
+    }
+    fromIntervalsResponse(response) {
+        return response.map(this.fromIntervalsEvent.bind(this));
+    }
+    async readFromFile(file) {
+        const result = await fileHandler.read(file);
+        return {result, name: file.name};
     }
     encode(db) {
         const records = db.records;
@@ -638,10 +651,15 @@ class Workout extends Model {
             events,
         });
     }
+    // utils
+    fileName () {
+        return `workout-${dateToDashString(new Date())}.fit`;
+    }
     download(db) {
         fileHandler.download()(this.encode(db), this.fileName(), fileHandler.Type.OctetStream);
     }
     send(db) {
+        // TODO: remove the whole method
         const name = this.fileName();
         const blob = fileHandler.toBlob(this.encode(db));
 
@@ -654,15 +672,15 @@ class Workout extends Model {
     }
 }
 
+// TODO:
+// - rename to Libarary
+// - use to just manage the library list of workouts
 class Workouts extends Model {
     name = 'workouts';
 
     init(args) {
         const self = this;
         self.workoutModel = args.workoutModel;
-    }
-    postInit(args) {
-        const self = this;
     }
     defaultValue() {
         const self = this;
@@ -693,7 +711,7 @@ class Workouts extends Model {
     }
     add(workouts, workout) {
         const self = this;
-        workouts.push(Object.assign(workout, {id: uuid()}));
+        workouts.push(idb.setId(workout));
         self.save(workout);
         return workouts;
     }
@@ -714,6 +732,78 @@ class Workouts extends Model {
         }
         idb.remove(self.name, id);
         return workouts.filter((w) => w.id !== id);
+    }
+}
+
+// TODO:
+// - standardize the methods
+class Planned {
+    name = 'planned';
+    constructor(args = {}) {
+        const self = this;
+        this.data = this.defaultValue();
+        this.workoutModel = args.workoutModel;
+        this.storage = LocalStorageItem({
+            key: 'planned',
+            encode: JSON.stringify,
+            parse: JSON.parse,
+            fallback: this.defaultValue(),
+        });
+    }
+    defaultValue() {
+        return {workouts: [], modified: {}};
+    }
+    get(id) {
+        for(let workout of this.data.workouts) {
+            if(workout.id === id) {
+                return workout;
+            }
+        }
+        console.error(`tring to get a missing planned workout: ${id}`);
+        return first(this.data.workouts);
+    }
+    setWorkouts(workouts) {
+        this.data.workouts = workouts;
+    }
+    list() {
+        return this.data.workouts;
+    }
+    setModified(service = 'intervals') {
+        this.data.modified[service] = Date.now();
+    }
+    isEmpty() {
+        return this.data.workouts.length === 0;
+    }
+    restore() {
+        // TODO:
+        // store the data with a timestamp,
+        // if it is older than 00:00 refresh the data once
+        // if there are no workouts fallback to []
+        console.log(':planned :restore');
+        this.data = this.storage.restore();
+        xf.dispatch(`action:planned`, ':data');
+    }
+    backup() {
+        this.storage.set(this.data);
+        xf.dispatch(`action:planned`, ':data');
+    }
+    // forse refresh the wod data
+    async wod(service) {
+        const self = this;
+        if(service === 'intervals') {
+            const response = await api.intervals.wodMock();
+            const workouts = self.workoutModel.fromIntervalsResponse(response);
+            console.log(workouts);
+
+            this.setWorkouts(workouts);
+            this.setModified(service);
+            this.backup();
+
+            if(!this.isEmpty()) {
+                const id = first(this.data.workouts).id;
+                xf.dispatch(`action:li:${id}`, ':select');
+            }
+        }
     }
 }
 
@@ -1292,6 +1382,7 @@ const powerInZone = new PowerInZone({ftpModel: ftp});
 const activity = new Activity({prop: 'activity', api: api});
 const workout = new Workout({prop: 'workout', api: api});
 const workouts = new Workouts({prop: 'workouts', workoutModel: workout});
+const planned = new Planned({prop: 'planned', workoutModel: workout, api: api});
 
 const session = Session();
 
@@ -1335,6 +1426,7 @@ let models = {
     activity,
     workout,
     workouts,
+    planned,
     session,
 
     PropInterval,

@@ -383,6 +383,8 @@ body.dark-theme {
     --border-color: var(--white-opacity-01);
     --progress: #fff4;
     --input-color: var(--white);
+    --toogle-inactive-color: var(--gray);
+    --toogle-active-color: var(--white);
 }
 @media (prefers-color-scheme: dark) {
     body.auto-theme { 
@@ -393,6 +395,8 @@ body.dark-theme {
         --border-color: var(--white-opacity-01);
         --progress: #fff4;
         --input-color: var(--white);
+        --toogle-inactive-color: var(--gray);
+        --toogle-active-color: var(--white);
     }
 } 
 
@@ -407,6 +411,8 @@ body.white-theme {
     --border-color: var(--black-opacity-01);
     --progress: #6f6f6f44;
     --input-color: var(--white);
+    --toogle-inactive-color: var(--gray);
+    --toogle-active-color: var(--black);
 }
 @media (prefers-color-scheme: light) {
     body.auto-theme { 
@@ -417,6 +423,8 @@ body.white-theme {
         --border-color: var(--black-opacity-01);
         --progress: #6f6f6f44;
         --input-color: var(--white);
+        --toogle-inactive-color: var(--gray);
+        --toogle-active-color: var(--black);
     }
 } 
 /* End White Theme */
@@ -885,7 +893,7 @@ div.graph--bar-group {
     align-items: flex-end;
     padding: 0;
 }
-#graph--info--cont {
+.graph--info--cont {
     display: none;
     font-size: 1.4em;
     line-height: 1.2em;
@@ -1020,6 +1028,10 @@ div.graph--bar-group {
     /* min-height: 100%; */
     /* min-height: var(--list--graph--height); */
     padding: 0;
+}
+.workout--graph {
+    height: 8em;
+    max-width: 100%;
 }
 
 #progress {
@@ -1303,6 +1315,122 @@ div.graph--bar-group {
 }
 
 /* Workout List */
+.tp-logo {
+    display: grid;
+    font-size: 20px;
+    font-style: italic;
+    font-weight: bold;
+    height: 40px;
+    width: 40px;
+    letter-spacing: 1px;
+    text-indent: -2px;
+    align-content: center;
+    background-color: #005695;
+    /* border: 1px solid #fff; */
+    border-radius: 7px;
+}
+.tp-logo--icon {
+    display: grid;
+    font-style: italic;
+    font-weight: bold;
+    height: 2.4em;
+    width: 2.4em;
+    letter-spacing: 1px;
+    text-indent: -1px;
+    align-content: center;
+    background-color: #005695;
+    /* border: 1px solid #fff; */
+    border-radius: 7px;
+}
+
+
+/* The new classes */
+.active-list-item {
+    display: block;
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+
+    .item--cont {
+        position: relative;
+        padding: 0em 1.5em;
+        background-color: var(--background-color);
+        z-index: 1;
+    }
+
+    .summary {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        align-content: center;
+        max-width: var(--inner-max-width);
+        margin: 0 auto;
+
+
+        .summary--data {
+            display: grid;
+            grid-template-columns: 5fr 3fr 2fr 1fr 1fr;
+
+            align-items: center;
+            align-content: center;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5em 0;
+            text-align: left;
+            cursor: pointer;
+        }
+    }
+    .selectable {
+        .on {
+            display: none;
+        }
+        .off {
+            display: block;
+        }
+
+        &.active {
+
+            .on {
+                display: block;
+            }
+            .off {
+                display: none;
+            }
+        }
+    }
+    .optional {
+        transform: translateX(0);
+
+        &.active {
+            transform: translateX(-8rem);
+        }
+    }
+    .expandable {
+        display: none;
+
+        &.active {
+            display: block;
+        }
+    }
+    .optional--actions {
+        position: absolute;
+        display: grid;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 8em;
+        background-color: var(--red);
+        z-index: 0;
+
+        .remove {
+            font-size: 1.4em;
+            justify-self: center;
+            align-self: center;
+            cursor: pointer;
+        }
+    }
+}
+
+/* The old classes */
 .workout {
     display: block;
     position: relative;
@@ -1315,7 +1443,6 @@ div.graph--bar-group {
     background-color: var(--background-color);
     z-index: 1;
 }
-
 .options-show {
     transform: translateX(-8rem);
 }
@@ -1345,9 +1472,6 @@ div.graph--bar-group {
 .workout--options {
     display: flex;
     justify-content: center;
-}
-.workout--options-btn {
-    pointer-events: none;
 }
 
 .workout--short-info {
@@ -1920,23 +2044,23 @@ div.graph--bar-group {
     height: 2em;
     margin: 0.5em auto;
     border-radius: 1em;
-    border: 0.3em solid var(--gray);
+    border: 0.3em solid var(--toogle-inactive-color);
 
     .toggle {
         position: absolute;
-        top: 0.2em;
+        top: 0.24em;
         left: 0.2em;
         width: 1em;
         height: 1em;
-        background-color: var(--gray);
+        background-color: var(--toogle-inactive-color);
         border-radius: 50%;
     }
 
     &.active {
-        border: 0.3em solid var(--white);
+        border: 0.3em solid var(--toogle-active-color);
 
         .toggle {
-            background-color: var(--white);
+            background-color: var(--toogle-active-color);
             left: 1.50em;
         }
     }
@@ -2147,7 +2271,7 @@ div.graph--bar-group {
 }
 .list--row--outer {
     width: 100%;
-    border-bottom: 1px solid var(--white-opacity-01);
+    border-bottom: 1px solid var(--border-color);
 }
 .list--row--inner {
     max-width: var(--inner-max-width);
@@ -2155,9 +2279,41 @@ div.graph--bar-group {
     padding: 1em;
 }
 .list--heading--cont {
-    max-width: var(--inner-max-width);
+    width: 100%;
+    margin: 0 auto;
+    /* border-bottom: 1px solid var(--white-opacity-01); */
+
+    &.control {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.planned--actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 1.5em;
+}
+.planned--empty {
+    display: grid;
+    font-size: var(--workout--name-font-size);
+    padding: 1.5em 0;
+    border-bottom: 1px solid var(--white-opacity-01);
+}
+
+planned-list {
+    display: grid;
+    /* margin: 0 1.5em; */
+}
+
+workout-graph-svg {
+    display: block;
+    margin: 0 auto;
+    height: 8em;
+    max-width: 100%;
     margin: 0 auto;
 }
+
 .list--heading {
     font-size: 1.8em;
     line-height: 1.8em;
@@ -2174,7 +2330,7 @@ div.graph--bar-group {
     line-height: 1.4em;
     text-transform: uppercase;
     text-align: left;
-    padding: 1rem 0em 1rem 1rem;
+    padding: 1rem 0em;
     color: var(--gray);
 }
 
@@ -2210,6 +2366,7 @@ div.graph--bar-group {
 }
 .sound--control {
     cursor: pointer;
+    fill: var(--foreground-color);
 }
 
 .sound--volume {
@@ -2219,7 +2376,7 @@ div.graph--bar-group {
 
 .activity--cont {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
     justify-content: center;
     line-height: 4rem;
 }
@@ -2245,6 +2402,7 @@ div.graph--bar-group {
     display: block;
     width: 2.4rem;
     height: 2.4rem;
+    fill: var(--foreground-color);
 }
 .activity--upload {
     font-size: 1.2em;
@@ -2532,7 +2690,7 @@ and (orientation: portrait) {
         line-height: 2em;
     }
 
-    #graph--info--cont {
+    .graph--info--cont {
         font-size: 1.6em;
     }
 
@@ -2555,7 +2713,7 @@ and (min-height: 768px) {
         font-size: 1.6rem;
     }
 
-    #graph--info--cont {
+    .graph--info--cont {
         font-size: 1.6em;
     }
 }
@@ -2672,7 +2830,7 @@ and (min-height: 850px) {
     }
 
 
-    #graph--info--cont {
+    .graph--info--cont {
         font-size: 2.0em;
     }
 
@@ -2737,7 +2895,7 @@ and (min-height: 1200px) {
         line-height: 1.5em;
     }
 
-    #graph--info--cont {
+    .graph--info--cont {
         font-size: 2.4em;
     }
 
@@ -2787,7 +2945,7 @@ and (min-height: 1600px) {
         font-size: 2.4rem;
     }
 
-    #graph--info--cont {
+    .graph--info--cont {
         font-size: 4.0em;
     }
 

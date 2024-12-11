@@ -150,7 +150,8 @@ function IDB(args = {}) {
             if(!exists(id)) {
                 id = uuid();
             };
-            Object.assign(item, {id: id});
+            item.id = id;
+            console.log(`:idb :setId`, id);
         }
         return item;
     }
