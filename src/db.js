@@ -100,6 +100,7 @@ let db = {
 
     // Services
     services: {strava: false, intervals: false, trainingPeaks: false},
+    intervalsApiKey: ''
 };
 
 xf.create(db);
@@ -336,6 +337,10 @@ xf.reg('course:position', (position, db) => {
     db.position_lat = position.position_lat;
     db.position_long = position.position_long;
 });
+xf.reg('ui:intervalsApiKey', (value, db) => {
+    db.intervalsApiKey = models.intervalsApiKey.set(value.intervalsApiKey);
+    models.intervalsApiKey.backup(value.intervalsApiKey);
+});
 
 // Wake Lock
 xf.reg('lock:beforeunload', (e, db) => {
@@ -387,6 +392,7 @@ xf.reg('app:start', async function(_, db) {
 
     db.sources = models.sources.set(models.sources.restore());
 
+    db.intervalsApiKey = models.intervalsApiKey.set(models.intervalsApiKey.restore())
     // IndexedDB Schema Version 3
     await idb.start('store', 3, ['session', 'workouts', 'activity']);
     db.workouts = await models.workouts.restore();
