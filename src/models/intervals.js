@@ -106,38 +106,43 @@ function Intervals(args = {}) {
     }
 
     async function wod() {
-        const oldest = isoDate();
-        const newest = isoDate();
-
-        const url = `${api_uri}/api/intervals/events` +
-              '?' +
-              new URLSearchParams({
-                  oldest,
-                  newest,
-              })
-              .toString();
-
         try {
-            const response = await fetch(url, {
-                method: 'POST',
-                credentials: 'include',
-            });
+            const event = await wodEvent();
 
-            if(response.ok) {
-                const data = await response.json();
-                console.log(data);
-                return data;
-            } else {
-                if(response.status === 403) {
-                    console.log(`:api :no-auth`);
-                    xf.dispatch('action:auth', ':password:login');
-                    xf.dispatch('ui:modal:error:open', DialogMsg.noAuth);
+            if(event !== ':fail') {
+                const url = `https://intervals.icu/api/v1/athlete/0/events/${event.id}/downloadzwo`.toString();
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: new Headers({
+                        'Authorization': 'Basic ' + btoa('API_KEY' + ":" + intervalsApiKey)
+                    }),
+                });
+                if(response.ok) {
+                    const text = await response.text();
+                    console.log(text);
+                    console.log(':success');
+                    const body = [{
+                        id: event.id,
+                        start_date_local: event.name,
+                        category: event.category,
+                        name: event.name,
+                        indoor: event.indoor,
+                        workout_filename: `${event.name}.zwo`,
+                        workout_file_base64: btoa(unescape(encodeURIComponent(text))) }
+                    ];
+                    return body;
+                } else {
+                    if(response.status === 403) {
+                        console.log(`:api :no-auth`);
+                        xf.dispatch('action:auth', ':password:login');
+                        xf.dispatch('ui:modal:error:open', DialogMsg.noAuth);
+                    }
+                    console.log(':fail');
                 }
-                return [];
             }
         } catch(error) {
-            console.log(error);
-            return [];
+            console.log(':error');
+            console.error(error)
         }
     }
 
@@ -181,44 +186,6 @@ function Intervals(args = {}) {
 
     async function wodMock() {
 
-        try {
-            const event = await wodEvent();
-
-            if(event !== ':fail') {
-                const url = `https://intervals.icu/api/v1/athlete/0/events/${event.id}/downloadzwo`.toString();
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: new Headers({
-                        'Authorization': 'Basic ' + btoa('API_KEY' + ":" + intervalsApiKey)
-                    }),
-                });
-                if(response.ok) {
-                    const text = await response.text();
-                    console.log(text);
-                    console.log(':success');
-                    const body = [{
-                        id: event.id,
-                        start_date_local: event.name,
-                        category: event.category,
-                        name: event.name,
-                        indoor: event.indoor,
-                        workout_filename: `${event.name}.zwo`,
-                        workout_file_base64: btoa(unescape(encodeURIComponent(text))) }
-                    ];
-                    return body;
-                } else {
-                    if(response.status === 403) {
-                        console.log(`:api :no-auth`);
-                        xf.dispatch('action:auth', ':password:login');
-                        xf.dispatch('ui:modal:error:open', DialogMsg.noAuth);
-                    }
-                    console.log(':fail');
-                }
-            }
-        } catch(error) {
-            console.log(':error');
-            console.error(error)
-        }
         const body = [{
             id: 47549572,
             start_date_local: `${isoDate()}T00:00:00`,
