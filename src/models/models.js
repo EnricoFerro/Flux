@@ -445,6 +445,35 @@ class Theme extends Model {
         return self.default;
     }
 }
+
+class IntervalsApiKey extends Model {
+    postInit(args = {}) {
+        const self = this;
+        const storageModel = {
+            key: self.prop,
+            fallback: self.defaultValue(),
+        };
+        self.storage = new args.storage(storageModel);
+    }
+    defaultValue() { return ''; }
+    defaultIsValid(value) { return value }
+    set(key) {
+        return key;
+    }
+    save(value) {
+        const self = this;
+        console.log(`:models :intervalsApiKey :save`);
+        idb.put(self.name, idb.setId(value));
+    }
+    restore(db) {
+        const self = this;
+        const value = self.parser(self.storage.get());
+        xf.dispatch(`models:intervalsApiKeyRestore`, { intervalsApiKeyRestore: value});
+        return value;
+    }
+    
+}
+
 class Measurement extends Model {
     postInit(args = {}) {
         const self = this;
@@ -1391,6 +1420,7 @@ const activity = new Activity({prop: 'activity', api: api});
 const workout = new Workout({prop: 'workout', api: api});
 const workouts = new Workouts({prop: 'workouts', workoutModel: workout});
 const planned = new Planned({prop: 'planned', workoutModel: workout, api: api});
+const intervalsApiKey = new IntervalsApiKey({prop: 'intervalsApiKey', storage: LocalStorageItem, api: api});
 
 const session = Session();
 
@@ -1435,6 +1465,7 @@ let models = {
     workout,
     workouts,
     planned,
+    intervalsApiKey,
     session,
 
     PropInterval,

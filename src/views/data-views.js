@@ -1258,8 +1258,86 @@ class OAuth extends HTMLElement {
 
 customElements.define('o-auth', OAuth);
 
+class OCustomIntervals extends HTMLElement {
+    postInit() {
+        this.effect  = 'sources';
+    }
+    getDefaults() {
+        return {
+            prop: 'db:sources',
+            effect: 'sources'
+        };
+    }
+    subs() {
+        xf.sub(`${this.prop}`, this.onUpdate.bind(this), this.signal);
+        this.$intervalsInput = self.querySelector('#intervals--connect--input--key');
+        this.$intervalsInput.addEventListener('keyup', this.onValueChange.bind(this), this.signal);
+    }
+    connectedCallback() {
+        const self = this;
+        this.abortController = new AbortController();
+        this.signal = { signal: self.abortController.signal };
 
+        this.$intervalsInput = self.querySelector('#intervals--connect--input--key');
+        this.$intervalsInput.addEventListener('keyup', this.onValueChange.bind(this), this.signal);
 
+    }
+    onSources(sources) {
+        this.sources = value;
+        this.render(this.sources);
+    }
+    onValueChange(e) {
+            /*if(stopPropagation) {
+        console.log(`stop propagation`);
+        e.stopPropagation();
+    }*/
+        console.log(e.target.value);
+        xf.dispatch(`ui:intervalsApiKey`, { 'intervalsApiKey': e.target.value });
+        //console.log(`action${topic}`, action, stopPropagation);
+        
+        //xf.dispatch(`action${topic}`, action);
+    }
+    disconnectedCallback() {
+        this.abortController.abort();
+    }
+
+}
+
+customElements.define('o-custom-intervals', OCustomIntervals);
+
+/*class Theme extends DataView {
+    postInit() {
+        this.effect  = 'sources';
+        this.state   = { theme: 'DARK' };
+    }
+    getDefaults() {
+        return {
+            prop: 'db:sources',
+            effect: 'sources'
+        };
+    }
+    subs() {
+        xf.sub(`${this.prop}`, this.onUpdate.bind(this), this.signal);
+        this.addEventListener('pointerup', this.onEffect.bind(this), this.signal);
+    }
+    onUpdate(value) {
+        this.state = value.theme;
+        this.render();
+    }
+    onEffect() {
+        if(equals(this.state, 'DARK')) {
+            xf.dispatch(`${this.effect}`, {theme: 'WHITE'});
+        }else if (equals(this.state, 'WHITE')) {
+            xf.dispatch(`${this.effect}`, {theme: 'AUTO'});
+        } else {
+            xf.dispatch(`${this.effect}`, {theme: 'DARK'});
+        }
+    }
+    render() {
+        this.textContent = equals(this.state, 'DARK') ? 'DARK' : equals(this.state, 'WHITE') ? 'WHITE' : 'AUTO';
+        document.body.className =  equals(this.state, 'DARK') ? 'dark-theme' : equals(this.state, 'WHITE') ? 'white-theme' : 'auto-theme';
+    }
+}*/
 
 class ModalError extends HTMLElement {
     constructor() {

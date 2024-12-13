@@ -8,6 +8,16 @@ function Intervals(args = {}) {
     const pwa_uri = config.PWA_URI;
     const intervals_client_id = config.INTERVALS_CLIENT_ID;
     const serviceName = OAuthService.intervals;
+    let intervalsApiKey = '';
+    
+
+    xf.sub('ui:intervalsApiKey', x => {
+        intervalsApiKey = x.intervalsApiKey
+    });
+    xf.sub('models:intervalsApiKeyRestore', x => {
+        intervalsApiKey = x.intervalsApiKeyRestore
+    });
+    
 
     // Step D
     async function connect() {
@@ -131,7 +141,84 @@ function Intervals(args = {}) {
         }
     }
 
+    async function wodEvent() {
+        const oldest = isoDate();
+        const newest = isoDate();
+
+        const url = `https://intervals.icu/api/v1/athlete/0/events.json` +
+              '?' +
+              new URLSearchParams({
+                  oldest,
+                  newest,
+                  limit: 1,
+                  resolve: false
+              })
+              .toString();
+              try {
+              const response = await fetch(url, {
+                method: 'GET',
+                headers: new Headers({
+                    'Authorization': 'Basic ' + btoa('API_KEY' + ":" + intervalsApiKey)
+                }),
+            });
+            if(response.ok) {
+                json = await response.json();
+                return json[0];
+                return ':success';
+            } else {
+                if(response.status === 403) {
+                    console.log(`:api :no-auth`);
+                    xf.dispatch('action:auth', ':password:login');
+                    xf.dispatch('ui:modal:error:open', DialogMsg.noAuth);
+                }
+                return ':fail';
+            }
+        } catch(error) {
+            console.log(error);
+            return ':fail';
+        }
+    }
+
     async function wodMock() {
+
+        try {
+            const event = await wodEvent();
+
+            if(event !== ':fail') {
+                const url = `https://intervals.icu/api/v1/athlete/0/events/${event.id}/downloadzwo`.toString();
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: new Headers({
+                        'Authorization': 'Basic ' + btoa('API_KEY' + ":" + intervalsApiKey)
+                    }),
+                });
+                if(response.ok) {
+                    const text = await response.text();
+                    console.log(text);
+                    console.log(':success');
+                    const body = [{
+                        id: event.id,
+                        start_date_local: event.name,
+                        category: event.category,
+                        name: event.name,
+                        indoor: event.indoor,
+                        workout_filename: `${event.name}.zwo`,
+                        workout_file_base64: btoa(unescape(encodeURIComponent(text))) }
+                    ];
+                    return body;
+                } else {
+                    if(response.status === 403) {
+                        console.log(`:api :no-auth`);
+                        xf.dispatch('action:auth', ':password:login');
+                        xf.dispatch('ui:modal:error:open', DialogMsg.noAuth);
+                    }
+                    console.log(':fail');
+                }
+            }
+        } catch(error) {
+            console.log(':error');
+            console.error(error)
+        }
         const body = [{
             id: 47549572,
             start_date_local: `${isoDate()}T00:00:00`,
