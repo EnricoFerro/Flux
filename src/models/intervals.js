@@ -167,7 +167,7 @@ function Intervals(args = {}) {
                 }),
             });
             if(response.ok) {
-                json = await response.json();
+                const json = await response.json();
                 return json[0];
                 return ':success';
             } else {
