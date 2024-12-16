@@ -76,7 +76,7 @@ function Intervals(args = {}) {
     }
 
     async function uploadWorkout(blob) {
-        const url = `${api_uri}/api/intervals/upload`;
+        const url = `https://intervals.icu/api/v1/athlete/0/activities`;
 
         const formData = new FormData();
         formData.append('file', blob);
@@ -84,7 +84,9 @@ function Intervals(args = {}) {
         try {
             const response = await fetch(url, {
                 method: 'POST',
-                credentials: 'include',
+                headers: new Headers({
+                    Authorization: "Basic " + btoa("API_KEY:" + r)
+                }),
                 body: formData,
             });
 
@@ -122,7 +124,6 @@ function Intervals(args = {}) {
                 });
                 if(response.ok) {
                     const text = await response.text();
-                    console.log(text);
                     console.log(':success');
                     const body = [{
                         id: event.id,
