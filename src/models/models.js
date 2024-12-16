@@ -802,6 +802,7 @@ class Planned {
         return this.data.workouts;
     }
     setModified(service = 'intervals') {
+        if (this.data.modified === undefined) this.data.modified = {};
         this.data.modified[service] = Date.now();
     }
     isEmpty() {
@@ -829,17 +830,23 @@ class Planned {
     async wod(service) {
         const self = this;
         if(service === 'intervals') {
-            const response = await api.intervals.wod();
-            const workouts = self.workoutModel.fromIntervalsResponse(response);
-
-            this.setWorkouts(workouts);
-            this.setModified(service);
-            this.backup();
-
-            if(!this.isEmpty()) {
-                const id = first(this.data.workouts).id;
-                xf.dispatch(`action:li:${id}`, ':select');
+            try {
+                const response = await api.intervals.wod();
+                const workouts = self.workoutModel.fromIntervalsResponse(response);
+                
+                this.setWorkouts(workouts);
+                this.setModified(service);
+                this.backup();
+                
+                if(!this.isEmpty()) {
+                    const id = first(this.data.workouts).id;
+                    xf.dispatch(`action:li:${id}`, ':select');
+                }
+            } catch (error) {
+                this.data.workouts = [];
+                this.backup();
             }
+
         }
     }
 }
