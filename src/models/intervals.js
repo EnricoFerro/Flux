@@ -85,7 +85,7 @@ function Intervals(args = {}) {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: new Headers({
-                    Authorization: "Basic " + btoa("API_KEY:" + r)
+                    Authorization: "Basic " + btoa("API_KEY:" + intervalsApiKey)
                 }),
                 body: formData,
             });
