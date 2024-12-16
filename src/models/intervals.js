@@ -108,7 +108,10 @@ function Intervals(args = {}) {
     async function wod() {
         try {
             const event = await wodEvent();
-
+            if (event === ':no-data') {
+                xf.dispatch(`action:planned`,':intervals:wod:success');
+                return ':no-data';
+            }
             if(event !== ':fail') {
                 const url = `https://intervals.icu/api/v1/athlete/0/events/${event.id}/downloadzwo`.toString();
                 const response = await fetch(url, {
@@ -130,6 +133,7 @@ function Intervals(args = {}) {
                         workout_filename: `${event.name}.zwo`,
                         workout_file_base64: btoa(unescape(encodeURIComponent(text))) }
                     ];
+                    xf.dispatch(`action:planned`,':intervals:wod:success');
                     return body;
                 } else {
                     if(response.status === 403) {
@@ -139,8 +143,11 @@ function Intervals(args = {}) {
                     }
                     console.log(':fail');
                 }
+            } else {
+               xf.dispatch(`action:planned`, ':intervals:wod:fail');
             }
         } catch(error) {
+            xf.dispatch(`action:planned`, ':intervals:wod:fail');
             console.log(':error');
             console.error(error)
         }
@@ -168,8 +175,10 @@ function Intervals(args = {}) {
             });
             if(response.ok) {
                 const json = await response.json();
+                if ( json.length === 0 ) {
+                    return ':no-data';
+                } 
                 return json[0];
-                return ':success';
             } else {
                 if(response.status === 403) {
                     console.log(`:api :no-auth`);
