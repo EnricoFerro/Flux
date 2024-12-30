@@ -7,8 +7,8 @@
 /src/simulation-scripts.js
 **/.DS_Store
 **/dev_cert
+.parcel-cache
 .cache
 notes.txt
 env.js
-package-lock.json
 
