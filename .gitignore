@@ -6,6 +6,7 @@
 /gists/
 /src/simulation-scripts.js
 **/.DS_Store
+**/dev_cert
 .cache
 notes.txt
 env.js

@@ -939,7 +939,6 @@ function Session(args = {}) {
 
             // UI options
             powerSmoothing: db.powerSmoothing,
-            librarySwitch: db.librarySwitch,
         };
 
         return session;

@@ -63,7 +63,6 @@ let db = {
     // UI options
     powerSmoothing: 0,
     dataTileSwitch: models.dataTileSwitch.default,
-    librarySwitch: 0,
     auth: ':login',
 
     // Workouts
@@ -209,10 +208,6 @@ xf.reg('ui:mode-set', (mode, db) => {
 xf.reg('ui:data-tile-switch-set', (index, db) => {
     db.dataTileSwitch = index;
     models.dataTileSwitch.backup(db.dataTileSwitch);
-});
-
-xf.reg('ui:library-switch-set', (index, db) => {
-    db.librarySwitch = index;
 });
 
 // Targets
@@ -408,11 +403,10 @@ xf.reg(`ant:search:stopped`, (x, db) => {
 });
 
 xf.reg('auth', (x, db) => {
-    console.log(`xf.reg('auth') `, x);
+    // TODO: remove?
 });
 
 xf.reg('services', (x, db) => {
-    console.log(`services `, x);
     db.services = Object.assign(db.services, x);
 });
 

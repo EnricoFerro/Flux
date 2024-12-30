@@ -1,12 +1,9 @@
-import { xf, print, } from '../functions.js';
+import { xf, once, print, } from '../functions.js';
 import { isoDate, } from '../utils.js';
 import { OAuthService, DialogMsg, stateParam, } from './enums.js';
+import config from './config.js';
 
 function Intervals(args = {}) {
-    const config = args.config;
-    const api_uri = config.API_URI;
-    const pwa_uri = config.PWA_URI;
-    const intervals_client_id = config.INTERVALS_CLIENT_ID;
     const serviceName = OAuthService.intervals;
     let intervalsApiKey = '';
     
@@ -18,6 +15,13 @@ function Intervals(args = {}) {
         intervalsApiKey = x.intervalsApiKeyRestore
     });
     
+    const api_uri = config.get().API_URI;
+    const pwa_uri = config.get().PWA_URI;
+    let intervals_client_id = config.get().INTERVALS_CLIENT_ID;
+
+    const update = function() {
+        intervals_client_id = config.get().INTERVALS_CLIENT_ID;
+    };
 
     // Step D
     async function connect() {
@@ -34,12 +38,35 @@ function Intervals(args = {}) {
                   scope,
                   state,
               }).toString();
+
         window.location.replace(url);
     }
 
     async function disconnect() {
         // TODO:
-        const url = "https://intervals.icu/oauth/deauthorize";
+        // try {
+        //     const stravaResponse = await fetch(
+        //         "https://intervals.icu/api/v1/disconnect-app",
+        //         {method: 'DELETE',}
+        //     );
+        //     console.log(`:oauth :intervals :disconnect`);
+        //     const stravaBody = await stravaResponse.text();
+
+        //     const apiResponse = await fetch(
+        //         api_uri+`/api/intervals/deauthorize`,
+        //         {method: 'POST', credentials: 'include',},
+        //     );
+
+        //     const apiBody = await apiResponse.text();
+
+        //     xf.dispatch(`services`, {intervals: false});
+        // } catch (e) {
+        //     console.log(`:intervals :deauthorize :error `, e);
+        // }
+
+        // fallback since it seems deauthorize it supported only from
+        // the Intervals.icu settings page
+        await connect();
     }
 
     // Step 3
@@ -93,11 +120,9 @@ function Intervals(args = {}) {
             if(response.ok) {
                 return ':success';
             } else {
-                if(response.status === 403) {
+                if(response.status === 403 || response.status === 401) {
                     console.log(`:api :no-auth`);
-                    xf.dispatch('action:auth', ':password:login');
-
-                    xf.dispatch('ui:modal:error:open', DialogMsg.noAuth);
+                    xf.dispatch('ui:modal:error:open', 'Not authorized to use the Intervals API');
                 }
                 return ':fail';
             }
@@ -137,10 +162,9 @@ function Intervals(args = {}) {
                     xf.dispatch(`action:planned`,':intervals:wod:success');
                     return body;
                 } else {
-                    if(response.status === 403) {
+                    if(response.status === 403 || response.status === 401) {
                         console.log(`:api :no-auth`);
-                        xf.dispatch('action:auth', ':password:login');
-                        xf.dispatch('ui:modal:error:open', DialogMsg.noAuth);
+                        xf.dispatch('ui:modal:error:open', 'Not authorized to use the Intervals API');
                     }
                     console.log(':fail');
                 }
@@ -181,14 +205,15 @@ function Intervals(args = {}) {
                 } 
                 return json[0];
             } else {
-                if(response.status === 403) {
+                xf.dispatch('action:planned', ':intervals:wod:fail');
+                if(response.status === 403 || response.status === 401) {
                     console.log(`:api :no-auth`);
-                    xf.dispatch('action:auth', ':password:login');
-                    xf.dispatch('ui:modal:error:open', DialogMsg.noAuth);
+                    xf.dispatch('ui:modal:error:open', 'Not authorized to use the Intervals API');
                 }
                 return ':fail';
             }
         } catch(error) {
+            xf.dispatch('action:planned', ':intervals:wod:fail');
             console.log(error);
             return ':fail';
         }
@@ -214,11 +239,14 @@ function Intervals(args = {}) {
         disconnect,
         paramsHandler,
         uploadWorkout,
+        update,
         wod,
 
         wodMock,
     });
 }
 
-export default Intervals;
+const intervals = Intervals();
+
+export default intervals;
 

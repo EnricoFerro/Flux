@@ -249,6 +249,17 @@ function curry2(fn) {
     };
 }
 
+function once(fn, context) {
+    let result;
+    return function() {
+        if(fn) {
+            result = fn.apply(context || this, arguments);
+            fn = null;
+        }
+        return result;
+    };
+}
+
 //
 // Copied from lodash.js
 //
@@ -737,6 +748,7 @@ export {
     repeat,
     nth,
     curry2,
+    once,
     debounce,
 
     // async

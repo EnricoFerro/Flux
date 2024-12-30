@@ -71,15 +71,6 @@ class ActivityList extends HTMLElement {
                         </view-action>
                         <view-action
                             class="activity--action"
-                            action=":strava:upload"
-                            topic=":activity:${this.id(data)}">
-                            <svg class="activity--icon strava--icon">
-                                <use href="#icon--strava" />
-                            </svg>
-                            <div class="connection-icon-switch--indicator ${status.strava ?? 'none'} strava"></div>
-                        </view-action>
-                        <view-action
-                            class="activity--action"
                             action=":intervals:upload"
                             topic=":activity:${this.id(data)}">
                             <svg class="activity--icon intervals--icon">
@@ -90,18 +81,28 @@ class ActivityList extends HTMLElement {
 
                         <view-action
                             class="activity--action"
-                            action=":tp:upload"
+                            action=":strava:upload"
                             topic=":activity:${this.id(data)}">
-                            <div class="tp-logo--icon">TP</div>
-                            <div class="connection-icon-switch--indicator ${status.tp ?? 'none'} tp"></div>
+                            <svg class="activity--icon strava--icon">
+                                <use href="#icon--strava" />
+                            </svg>
+                            <div class="connection-icon-switch--indicator ${status.strava ?? 'none'} strava"></div>
                         </view-action>
-
                     </div>
                 </div>
             </activity-item>
         `;
     }
 }
+
+                        // <view-action
+                        //     class="activity--action"
+                        //     action=":tp:upload"
+                        //     topic=":activity:${this.id(data)}">
+                        //     <div class="tp-logo--icon">TP</div>
+                        //     <div class="connection-icon-switch--indicator ${status.tp ?? 'none'} tp"></div>
+                        // </view-action>
+
 
 customElements.define('activity-list', ActivityList);
 

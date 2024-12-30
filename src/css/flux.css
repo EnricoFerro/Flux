@@ -1262,6 +1262,13 @@ div.graph--bar-group {
     align-items: center;
     height: 100%;
     cursor: pointer;
+
+    &.active svg {
+        fill: var(--foreground-color);
+    }
+    &.active .menu--btn--label {
+        color: var(--foreground-color);
+    }
 }
 
 .menu--btn--icon {
@@ -1278,17 +1285,17 @@ div.graph--bar-group {
     color: var(--foreground-color-inactive);
 }
 
-.menu--btn--icon--fill {
-    fill: var(--foreground-color-inactive);
-}
+/* .menu--btn--icon--fill { */
+/*     fill: var(--foreground-color-inactive); */
+/* } */
 
-.menu--btn.active .menu--btn--label {
-    color: var(--foreground-color);
-}
+/* .menu--btn.active .menu--btn--label { */
+/*     color: var(--foreground-color); */
+/* } */
 
-.menu--btn.active .menu--btn--icon--fill {
-    fill: var(--foreground-color);
-}
+/* .menu--btn.active .menu--btn--icon--fill { */
+/*     fill: var(--foreground-color); */
+/* } */
 /* END Menu */
 /* END Fixed Bottom */
 
@@ -1325,6 +1332,7 @@ div.graph--bar-group {
     letter-spacing: 1px;
     text-indent: -2px;
     align-content: center;
+    color: #fff;
     background-color: #005695;
     /* border: 1px solid #fff; */
     border-radius: 7px;
@@ -1338,6 +1346,7 @@ div.graph--bar-group {
     letter-spacing: 1px;
     text-indent: -1px;
     align-content: center;
+    color: #fff;
     background-color: #005695;
     /* border: 1px solid #fff; */
     border-radius: 7px;
@@ -1620,6 +1629,11 @@ div.graph--bar-group {
     font-weight: bold;
 }
 
+.header--tab--group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
 .library--switch--group {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1645,6 +1659,22 @@ div.graph--bar-group {
 
 .library--switch.active .library--switch--heading {
     color: var(--foreground-color);
+}
+
+.sub-tab {
+    display: none;
+
+    &.active {
+        display: block;
+    }
+}
+navigation-action {
+    color: var(--foreground-color-inactive);
+    cursor: pointer;
+
+    &.active {
+        color: var(--foreground-color);
+    }
 }
 
 #workouts {
@@ -2259,6 +2289,12 @@ div.graph--bar-group {
     .webauthn--section {
         margin: 1rem 0;
     }
+    .input[name="username"] {
+        display: none;
+    }
+    .cf-turnstile {
+        margin: 1em auto;
+    }
 }
 #profile {
     display: none;
@@ -2378,7 +2414,8 @@ workout-graph-svg {
 
 .activity--cont {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
+    /* grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr; */
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr;
     justify-content: center;
     line-height: 4rem;
 }
@@ -2456,13 +2493,23 @@ dialog {
 
 .app-connection {
     display: grid;
-    grid-template-columns: 5em 1fr 1fr;
     align-items: center;
     padding: 1rem 1rem;
+
+    &.logo {
+        grid-template-columns: 1fr 1fr;
+    }
+    &.icon {
+        grid-template-columns: 5em 1fr 1fr;
+    }
 }
 
 .app-connection--icon {
     width: 4em;
+    height: 4em;
+    margin-right: 1rem;
+}
+.app-connection--logo {
     height: 4em;
     margin-right: 1rem;
 }
