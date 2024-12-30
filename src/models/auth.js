@@ -1,12 +1,82 @@
-import { exists, xf, print, } from '../functions.js';
+import { exists, xf, once, print, } from '../functions.js';
 import { DialogMsg } from './enums.js';
 import { uuid } from '../storage/uuid.js';
+import config from './config.js';
+import strava from './strava.js';
+import intervals from './intervals.js';
+import trainingPeaks from './training-peaks.js';
 
 function Auth(args = {}) {
-    const config = args.config;
-    const api_uri = config.API_URI;
-    const pwa_uri = config.PWA_URI;
-    const strava_client_id = config.STRAVA_CLIENT_ID;
+    const api_uri = config.get().API_URI;
+    const pwa_uri = config.get().PWA_URI;
+
+    let _loggedIn = false;
+    let _hasApi = true;
+
+    let _turnstileLoaded = false;
+    let _turnstileId;
+    let _expired = true;
+
+    function loadTurnstile() {
+        if(!_loggedIn && _hasApi && !_turnstileLoaded) {
+            console.log(`:turnstile :load`);
+
+            const script = document.createElement('script');
+            script.src = `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstile`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+    };
+
+    window.onloadTurnstile = function() {
+        console.log(`:turnstile :onload`);
+        _turnstileLoaded = true;
+        renderTurnstile();
+    };
+
+    function renderTurnstile() {
+        if('turnstile' in window) {
+            console.log(`:turnstile :render ${_turnstileId}`);
+
+            _turnstileId = window.turnstile.render("#cf-turnstile-container", {
+                sitekey: "0x4AAAAAAA2IUz1CU0EU3E-O",
+            });
+
+            _expired = false;
+        }
+    }
+
+    function resetTurnstile() {
+        if('turnstile' in window) {
+            console.log(`:turnstile :reset ${_turnstileId}`);
+            window.turnstile.reset(_turnstileId);
+            _expired = false;
+        }
+    }
+    function isTurnstileExpired() {
+        if('turnstile' in window) {
+            console.log(`:turnstile :reset ${_turnstileId}`);
+            _expired = window.turnstile.isExpired(_turnstileId);
+            return _expired;
+        }
+        return true;
+    }
+
+    function removeTurnstile() {
+        if('turnstile' in window) {
+            console.log(`:turnstile :remove ${_turnstileId}`);
+            window.turnstile.remove(_turnstileId);
+            _expired = true;
+        }
+    }
+
+
+    function isBrowser() {
+        return (
+            ('bluetooth' in navigator) && ('wakeLock' in navigator)
+        );
+    }
 
     // {data: {FormData}} -> Void
     async function register(args = {}) {
@@ -15,8 +85,10 @@ function Auth(args = {}) {
 
         if(data.email.trim() === '' ||
             data.password.trim() === '' ||
-            data.password_confirmation.trim() === ''
+            data.password_confirmation.trim() === '' ||
+            !isBrowser()
             ) {
+            console.log(`:register :blocked :is-browser ${isBrowser()}`);
             return;
         }
 
@@ -37,6 +109,7 @@ function Auth(args = {}) {
             }
             if(json?.result?.success) {
                 console.log(':api :register :success');
+                xf.dispatch('action:nav', 'settings:profile');
                 xf.dispatch('action:auth', ':password:login');
                 return;
             }
@@ -52,7 +125,10 @@ function Auth(args = {}) {
         const url = `${api_uri}/api/login`;
         const data = args.data;
 
-        if(data.email.trim() === '' || data.password.trim() === '') {
+        if(data.email.trim() === '' ||
+           data.password.trim() === '' ||
+           !isBrowser()) {
+            console.log(`:login :blocked :is-browser ${isBrowser()}`);
             return;
         }
 
@@ -97,8 +173,18 @@ function Auth(args = {}) {
             });
 
             const result = await response.json();
+
             console.log(`:api :logout :success`);
             xf.dispatch('action:auth', ':password:logout');
+
+            _loggedIn = false;
+
+            if(_turnstileLoaded) {
+                renderTurnstile();
+            } else {
+                loadTurnstile();
+            }
+
             status();
         } catch(error) {
             console.log(error);
@@ -110,7 +196,8 @@ function Auth(args = {}) {
         const url = `${api_uri}/api/forgot-password`;
         const data = args.data;
 
-        if(data.email.trim() === '') {
+        if(data.email.trim() === '' || !isBrowser()) {
+            console.log(`:forgot :blocked :is-browser ${isBrowser()}`);
             return;
         }
 
@@ -141,7 +228,9 @@ function Auth(args = {}) {
         data.token = token;
 
         if(data.password.trim() === '' ||
-           data.password_confirmation.trim() === '') {
+           data.password_confirmation.trim() === '' ||
+           !isBrowser()) {
+            console.log(`:reset :blocked :is-browser ${isBrowser()}`);
             return;
         }
 
@@ -183,19 +272,45 @@ function Auth(args = {}) {
             const status = response.status;
             const body = await response.json();
 
-            if(status === 200) {
+            if(response.ok) {
                 console.log(`:api :profile`);
+                _loggedIn = true;
+
+                if(_turnstileLoaded) {
+                    removeTurnstile();
+                }
+
+                console.log(`:status`, body.result);
+
+                config.setServices(body.result.services);
+                strava.update();
+                intervals.update();
+                trainingPeaks.update();
+
                 xf.dispatch('action:auth', ':password:profile');
                 xf.dispatch('services', body?.result);
                 return body.result;
             }
             if(status === 403) {
-                console.log(`:api :no-auth`);
+                _loggedIn = false;
+
+                if(_turnstileLoaded) {
+                }
+
+                xf.dispatch('action:status', ':logout');
                 xf.dispatch('action:auth', ':password:login');
                 return {strava: false, intervals: false, trainingPeaks: false};
             }
             if(status === 500 || status === 405) {
                 console.log(`:api :no-api`);
+
+                _loggedIn = false;
+                _hasApi = false;
+
+                if(_turnstileLoaded) {
+                    removeTurnstile();
+                }
+
                 xf.dispatch('action:auth', ':no-api');
                 return {strava: false, intervals: false, trainingPeaks: false};
             }
@@ -203,6 +318,12 @@ function Auth(args = {}) {
             return {strava: false, intervals: false, trainingPeaks: false};
         } catch(error) {
             console.log(`:api :no-api`);
+            console.log(error);
+
+            if(_turnstileLoaded) {
+                removeTurnstile();
+            }
+
             xf.dispatch('action:auth', ':no-api');
             return {strava: false, intervals: false, trainingPeaks: false};
         }
@@ -215,8 +336,15 @@ function Auth(args = {}) {
         forgot,
         reset,
         status,
+
+        loadTurnstile,
+        resetTurnstile,
+        isTurnstileExpired,
+        removeTurnstile,
     });
 }
 
-export default Auth;
+const auth = Auth();
+
+export default auth;
 
