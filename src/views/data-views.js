@@ -275,6 +275,9 @@ class CadenceValue extends DataView {
             prop: 'db:cadence',
         };
     }
+    transform(state) {
+        return Math.round(state);
+    }
 }
 
 customElements.define('cadence-value', CadenceValue);

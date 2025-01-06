@@ -9,6 +9,7 @@ Auuki is an App for executing structured workouts on a smart trainer.
 - workouts with [Slope targets](https://github.com/dvmarinoff/Auuki/wiki/Slope-target-for-workout-intervals)
 - recording .FIT Activities compatible with all major platforms like Strava, Training Peaks, etc
 - build-in collection of structured workouts to get you started
+- integrations with [Intervals.icu](https://intervals.icu/) and Strava allow for syncing planned workouts and uploading activities
 
 The web version is free to use and open source. It is developed as a static PWA, has zero dependancies and is completly independant to run.
 Everything happens in your Browser and stays in there. It uses Web Bluetooth, Web Serial, Web Components, IndexDB, Local Storage, WakeLock API.
@@ -107,13 +108,16 @@ You can support the development of Auuki via [Github Sponsers](https://github.co
 ### Backers
 <div>
     <a href="https://github.com/KlausMu" target="_blank">
-        <img style="display: inline-block;" src="https://avatars.githubusercontent.com/u/14290221?v=4" width="64" height="64" />
+        <img style="display: inline-block;" src="https://avatars.githubusercontent.com/u/14290221?v=4" width="48" height="48" />
     </a>
     <a href="https://github.com/TClin76" target="_blank">
-        <img style="display: inline-block;" src="https://avatars.githubusercontent.com/u/96434118?v=4" width="64" height="64" />
+        <img style="display: inline-block;" src="https://avatars.githubusercontent.com/u/96434118?v=4" width="48" height="48" />
     </a>
     <a href="https://github.com/fvolcic" target="_blank">
-        <img style="display: inline-block;" src="https://avatars.githubusercontent.com/u/59806465?s=64&v=4" width="64" height="64" />
+        <img style="display: inline-block;" src="https://avatars.githubusercontent.com/u/59806465?s=64&v=4" width="48" height="48" />
+    </a>
+    <a href="https://github.com/napfbike" target="_blank">
+        <img style="display: inline-block;" src=https://avatars.githubusercontent.com/u/192727271?v=4"" width="48" height="48" />
     </a>
 </div>
 <!-- sponsors -->

@@ -91,7 +91,8 @@ function Intervals(args = {}) {
             });
 
             const result = await response.text();
-            print.log(result);
+            console.log(`:oauth :intervals :connnect`);
+            xf.dispatch(`services`, {intervals: true});
             clearParams();
         } catch (e) {
             console.log(``, e);
@@ -102,11 +103,14 @@ function Intervals(args = {}) {
         window.history.pushState({}, document.title, window.location.pathname);
     }
 
-    async function uploadWorkout(blob) {
+    async function uploadWorkout(record) {
+        const blob = record.blob;
+        const workoutName = record.summary?.name ?? 'Powered by Auuki workout';
         const url = `https://intervals.icu/api/v1/athlete/0/activities`;
 
         const formData = new FormData();
         formData.append('file', blob);
+        formData.append('name', workoutName);
 
         try {
             const response = await fetch(url, {

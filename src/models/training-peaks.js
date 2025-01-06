@@ -92,7 +92,9 @@ function TrainingPeaks(args = {}) {
         window.history.pushState({}, document.title, window.location.pathname);
     }
 
-    async function uploadWorkout(blob) {
+    async function uploadWorkout(record) {
+        const blob = record.blob;
+        const workoutName = record.summary.name;
         const url = `${api_uri}/api/trainingpeaks/upload`;
 
         const formData = new FormData();
