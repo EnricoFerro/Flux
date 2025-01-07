@@ -23,6 +23,7 @@ class ActivityList extends HTMLElement {
     onAdd(activity) {
         const self = this;
         self.insertAdjacentHTML("afterbegin", self.template(this.index, activity));
+        xf.dispatch(`action:activity:${this.id(activity)}`, ':toggleExpand');
 
         if(this.childElementCount > 3) {
             self.removeChild(self.lastElementChild);
@@ -39,11 +40,18 @@ class ActivityList extends HTMLElement {
     id(data) {
         return data.id;
     }
+    name(data) {
+        return data.name;
+    }
     date(data) {
-        return formatDate({date: new Date(data.timestamp)});
+        return formatDate({
+            date: new Date(data.timestamp),
+            separator: '/',
+            year: false,
+        });
     }
     duration(data) {
-        return formatTime({value: data.duration});
+        return `${Math.ceil(data.duration / 60)} min`;
     }
     uploadStatus(data) {
         return data.status;
@@ -53,55 +61,94 @@ class ActivityList extends HTMLElement {
 
         return `
             <activity-item id="i${i}--activity--item" class="some" data-id="${this.id(data)}">
-                <div class="list--row--outer">
-                    <div class="list--row--inner activity--cont">
-                        <div id="i${i}--activity--date" class="activity--date">
-                            ${this.date(data)}
-                        </div>
-                        <div id="i${i}--activity--duration" class="activity--duration">
-                            ${this.duration(data)}
-                        </div>
-                        <view-action
-                            class="activity--action"
-                            action=":download"
-                            topic=":activity:${this.id(data)}">
-                            <svg class="activity--icon">
-                                <use href="#icon--save-btn" />
-                            </svg>
-                        </view-action>
-                        <view-action
-                            class="activity--action"
-                            action=":intervals:upload"
-                            topic=":activity:${this.id(data)}">
-                            <svg class="activity--icon intervals--icon">
-                                <use href="#icon--intervals" />
-                            </svg>
-                            <div class="connection-icon-switch--indicator ${status.intervals ?? 'none'} intervals"></div>
-                        </view-action>
+                    <div class="activity--cont list--row--outer">
+                        <div class="list--row--inner activity--info">
+                            <div class="activity--info--short">
+                                <view-action
+                                    class="info"
+                                    action=":toggleExpand"
+                                    topic=":activity:${this.id(data)}">
+                                    <div id="i${i}--activity--date" class="activity--name">
+                                        ${this.name(data)}
+                                    </div>
+                                    <div class="activity--date">
+                                        ${this.date(data)}
+                                    </div>
+                                    <div id="i${i}--activity--duration" class="activity--duration">
+                                        ${this.duration(data)}
+                                    </div>
+                                </view-action>
+                                <view-action
+                                    class="activity--action"
+                                    action=":options"
+                                    topic=":activity:${this.id(data)}">
+                                    <svg class="activity--icon activity--options--button">
+                                        <use href="#icon--options" />
+                                    </svg>
+                                </view-action>
+                            </div>
+                            <div class="activity--info--full">
+                                <div class="activity--image">
+                                </div>
+                                <div class="activity--actions">
+                                    <div></div>
+                                    <view-action
+                                        class="activity--action action--intervals"
+                                        action=":intervals:upload"
+                                        topic=":activity:${this.id(data)}">
+                                        <svg class="activity--icon intervals--icon">
+                                            <use href="#icon--intervals" />
+                                        </svg>
+                                        <div class="connection-icon-switch--indicator ${status.intervals ?? 'none'} intervals"></div>
+                                    </view-action>
 
-                        <view-action
-                            class="activity--action"
-                            action=":strava:upload"
-                            topic=":activity:${this.id(data)}">
-                            <svg class="activity--icon strava--icon">
-                                <use href="#icon--strava" />
-                            </svg>
-                            <div class="connection-icon-switch--indicator ${status.strava ?? 'none'} strava"></div>
-                        </view-action>
-                    </div>
-                </div>
+                                    <view-action
+                                        class="activity--action"
+                                        action=":strava:upload"
+                                        topic=":activity:${this.id(data)}">
+                                        <svg class="activity--icon strava--icon">
+                                            <use href="#icon--strava" />
+                                        </svg>
+                                        <div class="connection-icon-switch--indicator ${status.strava ?? 'none'} strava"></div>
+                                    </view-action>
+                                    <view-action
+                                        class="activity--action action--download"
+                                        action=":download"
+                                        topic=":activity:${this.id(data)}">
+                                        <svg class="activity--icon">
+                                            <use href="#icon--save-btn" />
+                                        </svg>
+                                    </view-action>
+                                    <view-action
+                                        class="activity--action action--image"
+                                        action=":image"
+                                        topic=":activity:${this.id(data)}">
+                                        <svg class="activity--icon">
+                                            <use href="#icon--image" />
+                                        </svg>
+                                    </view-action>
+                                </div> <!-- end activity--actions -->
+                            </div> <!-- end activity--info--full -->
+                        </div> <!-- end activity--info -->
+                    </div> <!-- end activity--cont -->
+                    <view-action
+                        class="activity--options"
+                        action=":remove"
+                        topic=":activity:${this.id(data)}">
+                        <span class="activity--remove">Delete</span>
+                    </view-action>
             </activity-item>
         `;
     }
 }
 
-                        // <view-action
-                        //     class="activity--action"
-                        //     action=":tp:upload"
-                        //     topic=":activity:${this.id(data)}">
-                        //     <div class="tp-logo--icon">TP</div>
-                        //     <div class="connection-icon-switch--indicator ${status.tp ?? 'none'} tp"></div>
-                        // </view-action>
+                                    // <view-action
+                                    //     class="activity--action"
+                                    //     action=":tp:upload"
+                                    //     topic=":activity:${this.id(data)}">
+                                    //     <div class="tp-logo--icon">TP</div>
+                                    //     <div class="connection-icon-switch--indicator ${status.tp ?? 'none'} tp"></div>
+                                    // </view-action>
 
 
 customElements.define('activity-list', ActivityList);
@@ -128,6 +175,21 @@ class ActivityItem extends HTMLElement {
     }
     onAction(action) {
         console.log(action, this.id);
+
+        if(action === ':options') {
+            this.classList.toggle('options');
+            return;
+        }
+        if(action === ':toggleExpand') {
+            this.classList.toggle('expand');
+            return;
+        }
+        if(action === ':remove') {
+            // TODO: refactor to a functional state driven approach
+            models.activity.remove(this.id);
+            this.remove();
+            return;
+        }
 
         if(action === ':download') {
             models.activity.download(this.id);

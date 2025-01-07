@@ -563,6 +563,9 @@ class Activity extends Model {
         }
         return activityList;
     }
+    remove(id) {
+        idb.remove('activity', id);
+    }
     async upload(service, id) {
         let record = await idb.get('activity', id);
 
