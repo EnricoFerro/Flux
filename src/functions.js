@@ -569,12 +569,13 @@ function time() {
 function formatDate(args = {}) {
     const date = args.date ?? new Date();
     const s = args.separator ?? '/';
+    const showYear = args.year ?? true;
 
     const day    = (date.getDate()).toString().padStart(2, '0');
     const month  = (date.getMonth()+1).toString().padStart(2, '0');
     const year   = date.getFullYear().toString();
 
-    return `${day}${s}${month}${s}${year}`;
+    return `${day}${s}${month}${showYear ? s : ''}${showYear ? year : ''}`;
 }
 
 // Bits
