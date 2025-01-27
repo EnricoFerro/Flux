@@ -340,7 +340,11 @@ class FTP extends Model {
     }
     toAbsolute(value, ftp) {
         const self = this;
-        if(value < self.minAbsValue) return parseInt(value * (ftp ?? self.state));
+        if(value < self.minAbsValue) {
+            const roundedUpValue = Math.round(value * 100) / 100; // round up to second position after decimal point
+            const absolute = Math.round(roundedUpValue * (ftp ?? self.state));
+            return absolute;
+        }
         return value;
     }
     powerToZone(value, ftp, zones) {
@@ -785,6 +789,7 @@ class Planned {
         const self = this;
         this.data = this.defaultValue();
         this.workoutModel = args.workoutModel;
+        this.athlete = {};
         this.storage = LocalStorageItem({
             key: 'planned',
             encode: JSON.stringify,
@@ -835,7 +840,7 @@ class Planned {
         this.storage.set(this.data);
         xf.dispatch(`action:planned`, ':data');
     }
-    // forse refresh the wod data
+    // force refresh the wod data
     async wod(service) {
         const self = this;
         if(service === 'intervals') {
@@ -856,6 +861,19 @@ class Planned {
                 this.backup();
             }
 
+        }
+    }
+    async getAthlete(service) {
+        const self = this;
+        if(service === 'intervals') {
+            const response = await api.intervals.getAthlete();
+            console.log(response);
+            if(response.weight > 0) {
+                xf.dispatch('ui:weight-set', response.weight);
+            }
+            if(response.ftp > 0) {
+                xf.dispatch('ui:ftp-set', response.ftp);
+            }
         }
     }
 }
@@ -1429,6 +1447,7 @@ const measurement = new Measurement({prop: 'measurement', storage: LocalStorageI
 const dataTileSwitch = new DataTileSwitch({prop: 'dataTileSwitch', storage: LocalStorageItem});
 
 const power1s = new PropInterval({prop: 'db:power', effect: 'power1s', interval: 1000});
+const power3s = new PropInterval({prop: 'db:power', effect: 'power3s', interval: 3000});
 const powerInZone = new PowerInZone({ftpModel: ftp});
 
 const activity = new Activity({prop: 'activity', api: api});
@@ -1451,6 +1470,7 @@ let models = {
     virtualState,
 
     power1s,
+    power3s,
     powerLap,
     powerAvg,
     powerInZone,
