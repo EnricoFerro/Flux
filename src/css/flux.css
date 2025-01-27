@@ -441,6 +441,7 @@ input {
 svg {
     fill: var(--foreground-color)
 }
+
 .chrome-bg {
     background-color: var(--background-color-2);
 }
@@ -1769,7 +1770,7 @@ navigation-action {
     grid-template-columns: 10% repeat(6, 15%);
 
     input {
-        color: #fff;
+        color: var(--foreground-color);
     }
 }
 
@@ -2219,7 +2220,7 @@ navigation-action {
         height: 3rem;
         color: var(--dark);
         background-color: #fff;
-        border-color: var(--border-color);
+        border: 1px solid var(--background-color-2);
     }
     .btn {
         margin: 1rem 0;
