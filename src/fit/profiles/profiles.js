@@ -71,6 +71,11 @@ function Profiles(args = {}) {
         return fields[name].base_type;
     }
 
+    
+    function fieldNameToType(name) {
+        return fields[name].type;
+    }
+
     return Object.freeze({
         BaseType,
         BaseTypeDefinitions,
@@ -86,6 +91,7 @@ function Profiles(args = {}) {
         fieldNameToNumber,
         fieldNameToSize,
         fieldNameToBaseType,
+        fieldNameToType
     });
 }
 

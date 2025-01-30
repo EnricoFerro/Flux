@@ -178,16 +178,23 @@ function DefinitionRecord(args = {}) {
         const messageName    = nth(0, productMessageDefinition);
         const fieldNames     = nth(1, productMessageDefinition);
         const local_number   = nth(2, productMessageDefinition);
-        const numberOfFields = fieldNames.length;
+        let numberOfFields = fieldNames.length;
+        /*if (messageName === 'hrv') {
+            numberOfFields = numberOfFields * 5
+        }*/
         const length         = fixedContentLength + (numberOfFields * fieldLength);
 
         return fieldNames.reduce(function(acc, fieldName) {
             const number    = profiles.fieldNameToNumber(messageName, fieldName);
-            const size      = profiles.fieldNameToSize(fieldName);
+            let size      = profiles.fieldNameToSize(fieldName);
             const base_type = profiles.fieldNameToBaseType(fieldName);
-
+            const type      = profiles.fieldNameToType(fieldName);
+            
+            if (type === 'uint16_array') {
+                size = size * 5
+            }
             acc.data_record_length += size;
-            acc.fields.push({number, size, base_type});
+            acc.fields.push({number, size, type, base_type});
 
             return acc;
         }, {

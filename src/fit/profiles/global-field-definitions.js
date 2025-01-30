@@ -1370,7 +1370,7 @@ export default {
         "units": ""
     },
     "time": {
-        "type": "uint16",
+        "type": "uint16_array",
         "base_type": "uint16",
         "scale": 1000,
         "units": "s"

@@ -80,6 +80,9 @@ const productMessageDefinitions = [
     ['course', [
         'name',
     ], 7],
+    ['hrv', [
+        'time',
+    ], 8],
     // ['field_description', [
     //     'developer_data_index',
     //     'field_definition_number',

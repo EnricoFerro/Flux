@@ -179,11 +179,45 @@ function LocalActivity(args = {}) {
         return stats;
     }
 
+    function buildRecordWithHrvs(args = {}) {
+        let recordRet = [];
+        for(let i = 0; i < args.records.length; i++) {
+            const record = { ...args.records[i] }
+            recordRet = [ ...recordRet, dataRecord.toFITjs(definitions.record, record)];
+            const hrv = args.hrvs.find((hrv) => hrv.timestamp == record.timestamp);
+            if (hrv && hrv.time && hrv.time.length > 0) {
+                const hrvTime = [...hrv.time].map(hrv => hrv / 1000 );
+                //const hrvFit = [...hrv.time]
+                for(let i = hrvTime.length; i < 5; i++ ) {
+                    hrvTime.push(null);
+                }
+               /*for(let i = hrvFit.length; i < 5; i++ ) {
+                
+                }*/
+                recordRet = [ ...recordRet, dataRecord.toFITjs(definitions.hrv, { time: hrvTime})];
+               
+            }
+
+        }
+        return recordRet;
+    }
+    function calcHrvs(args = {}) {
+        const hrvs = args.hrvs.map((hrv) => {
+            for(let i = hrv.time.length; i < 5; i++ ) {
+              hrv.time.push(65535)
+            }
+            hrv.time = hrv.time.join("|")	
+            return hrv
+          });
+        return hrvs;
+    }
+
     // {records: [{<field>: Any}], laps: [{<field>: Any}]}
     // ->
     // [FITjs]
     function toFITjs(args = {}) {
         const records = args.records ?? [];
+        const hrvs = args.hrvs ?? [];
         const laps = args.laps ?? [];
         const events = args.events ?? [];
 
@@ -224,10 +258,22 @@ function LocalActivity(args = {}) {
 
             // definition record
             definitions.record,
+            definitions.hrv,
             // data record messages
-            ...records.map((record) => dataRecord.toFITjs(
+            ...buildRecordWithHrvs({records: records, hrvs: hrvs}),
+            /*...records.map((record) => dataRecord.toFITjs(
                 definitions.record, record
             )),
+
+            ...hrvs.map((hrv) => dataRecord.toFITjs(
+                definitions.hrv, hrv.time.map((hrvO) => {
+                    const hrv = [...hrvO];
+                    for(let i = hrv.length; i < 5; i++ ) {
+                      hrv.push(65535)
+                    }
+                    return hrv.join("|")
+                }
+            ))),*/
 
             // definition events
             definitions.event,
@@ -294,7 +340,7 @@ function LocalActivity(args = {}) {
     }
 
     // {records: [{<field>: Any}], laps: [{<field>: Any}]}
-    // -> Dataview
+    // -> Dataview 
     function encode(args = {}) {
         const fitjs = toFITjs(args);
         return FITjs.encode(fitjs);

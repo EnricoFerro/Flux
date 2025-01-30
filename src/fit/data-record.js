@@ -52,7 +52,17 @@ function DataRecord(args = {}) {
             } else if(type.timestamp.isTimestamp(_field.type)) {
                 type.timestamp.encode(field, value, view, acc.i, endian);
             } else {
-                type.number.encode(_field, value, view, acc.i, endian);
+                if (field.type.endsWith("array")) {
+                    //value.map(v => type.number.encode(_field, v, view, acc.i, endian))
+                    for(i = 0; i < value.length; i++) {
+                        type.number.encode(_field, value[i], view, acc.i, endian);
+                        acc.i += field.size;
+                    }
+                    acc.i -=  field.size;
+                }
+                else {
+                    type.number.encode(_field, value, view, acc.i, endian);
+                }
             }
 
             acc.i += field.size;
