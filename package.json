@@ -17,6 +17,7 @@
     "dependencies": {
         "@babel/core": "^7.13.13",
         "@babel/node": "^7.13.13",
+        "@garmin/fitsdk": "^21.161.0",
         "parcel": "^2.12.0"
     }
 }
