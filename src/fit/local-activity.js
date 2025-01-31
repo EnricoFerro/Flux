@@ -4,23 +4,16 @@
 
 import { first, last, empty, expect, } from '../functions.js';
 import { profiles } from './profiles/profiles.js';
-import productMessageDefinitions from './profiles/product-message-definitions.js';
-import { fileHeader } from './file-header.js';
-import { definitionRecord } from './definition-record.js';
+//import productMessageDefinitions from './profiles/product-message-definitions.js';
+//import { fileHeader } from './file-header.js';
+//import { definitionRecord } from './definition-record.js';
 import { type } from './common.js';
-import { FITjs } from './fitjs.js';
+//import { FITjs } from './fitjs.js';
 import { EventType } from '../activity/enums.js';
 
 import { Encoder, Profile, Utils } from '@garmin/fitsdk';
 
 function LocalActivity(args = {}) {
-    const definitions = productMessageDefinitions
-          .reduce(function(acc, x) {
-              const d = definitionRecord.toFITjs(x);
-              acc[d.name] = d;
-              return acc;
-          }, {});
-
     // {records: [Record], events: [Event]} -> Int
     function calcTotalTimerTime(args) {
         const records = args.records ?? [];
@@ -186,13 +179,13 @@ function LocalActivity(args = {}) {
                 type: "activity",
                 manufacturer:  "garmin",    // garmin
                 product:       3570,        // edge 1030
-                serial_number: 3313379353,
+                serialNumber: 3313379353,
 
             },
             // file_creator
             {
                 mesgNum: Profile.MesgNum.FILE_CREATOR,
-                softwareVersion: 29, // edge 1030
+                softwareVersion: 2900, // edge 1030
             },
             // records
             ...records.flatMap(record => Record({ ...record, hrvs })),
@@ -349,12 +342,8 @@ const localActivity = LocalActivity();
 
 export {
     localActivity,
-    //FileId,
-    //Event,
-    //Lap,
-    //Session,
-    //Activity,
 
+    Record,
     Event,
     Lap,
     Session,
