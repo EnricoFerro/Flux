@@ -422,7 +422,7 @@ xf.reg('watch:elapsed', (x, db) => {
 
     const hrv = {
         timestamp: timestampNow,
-        hrv: db.rrIntervals,
+        time: db.rrIntervals,
     };
 
     db.hrvs.push(hrv);
