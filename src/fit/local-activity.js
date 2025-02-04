@@ -40,6 +40,28 @@ function LocalActivity(args = {}) {
         };
     }
 
+    // [Record] -> Record?
+    function findFirstRecord(records = []) {
+        for(let i = 0; i < records.length; i+=1) {
+            if(records[i].timestamp !== undefined) {
+                return records[i];
+            }
+        }
+        console.error(`:fit :records 'has no valid records'`);
+        return records[0];
+    }
+
+    // [Record] -> Record?
+    function findLastRecord(records = []) {
+        for(let i = records.length-1; i >= 0 ; i-=1) {
+            if(records[i].timestamp !== undefined) {
+                return records[i];
+            }
+        }
+        console.error(`:fit :records 'has no valid records'`);
+        return records[0];
+    }
+
     // {records: [Record], events: [Event]} -> Int
     function calcTotalTimerTime(args) {
         const records = args.records ?? [];
@@ -50,8 +72,9 @@ function LocalActivity(args = {}) {
             if(records.length > 1) {
                 // if no events are recorded fallback to first and last record
                 return type.timestamp.elapsed(
-                    first(records)?.timestamp,
-                    last(records)?.timestamp,
+                    // TODO: handle record is not guaranteed to be a Record
+                    findFirstRecord(records)?.timestamp,
+                    findLastRecord(records)?.timestamp
                 );
             } else {
                 // if no events are recorded and no more than one record return 0
@@ -90,8 +113,8 @@ function LocalActivity(args = {}) {
             return 0;
         }
 
-        const start_time = first(events)?.timestamp ?? first(records)?.timestamp;
-        const timestamp = last(laps)?.timestamp ?? last(records)?.timestamp;
+        const start_time = first(events)?.timestamp ?? findFirstRecord(records)?.timestamp;
+        const timestamp = last(laps)?.timestamp ?? findLastRecord(records)?.timestamp;
 
         return type.timestamp.elapsed(start_time, timestamp);
     }
@@ -155,11 +178,13 @@ function LocalActivity(args = {}) {
             max_cadence: 0,
             max_speed: 0,
             max_heart_rate: 0,
-            total_distance: last(records)?.distance ?? 0,
+            total_distance: findLastRecord(records)?.distance ?? 0,
             total_calories: 0,
         };
 
-        const stats = records.reduce(function(acc, record, _, { length }) {
+        const stats = records
+              .filter(record => record.timestamp !== undefined)
+              .reduce(function(acc, record, _, { length }) {
             acc.avg_power      += record.power / length;
             acc.avg_cadence    += record.cadence / length;
             acc.avg_speed      += record.speed / length;
@@ -171,7 +196,7 @@ function LocalActivity(args = {}) {
             return acc;
         }, defaultStats);
 
-        stats.total_calories = Math.floor(stats.avg_power * total_timer_time / 1000);
+        stats.total_calories = Math.floor(stats.avg_power * total_timer_time * 0.001);
         stats.avg_power = Math.floor(stats.avg_power);
         stats.avg_cadence = Math.floor(stats.avg_cadence);
         stats.avg_heart_rate = Math.floor(stats.avg_heart_rate);
@@ -187,8 +212,8 @@ function LocalActivity(args = {}) {
         const laps = args.laps ?? [];
         const events = args.events ?? [];
 
-        const activity_start_time = first(events)?.start_time ?? first(records).timestamp;
-        const time_created = last(laps)?.timestamp ?? last(records)?.timestamp;
+        const activity_start_time = first(events)?.start_time ?? findFirstRecord(records).timestamp;
+        const time_created = last(laps)?.timestamp ?? findLastRecord(records)?.timestamp;
         const timestamp    = time_created;
         const total_elapsed_time = calcTotalElapsedTime({records, laps, events});
         const total_timer_time = calcTotalTimerTime({records, events});
@@ -224,10 +249,15 @@ function LocalActivity(args = {}) {
 
             // definition record
             definitions.record,
+            // definition hrv
+            definitions.hrv,
             // data record messages
-            ...records.map((record) => dataRecord.toFITjs(
-                definitions.record, record
-            )),
+            ...records.map((record) =>
+                dataRecord.toFITjs(
+                    record.time === undefined ? definitions.record : definitions.hrv,
+                    record
+                )
+            ),
 
             // definition events
             definitions.event,
@@ -373,12 +403,12 @@ function Session(args = {}) {
             args.total_timer_time,
             'Session needs total_timer_time'
         ),
-        message_index:      args.message_index,
+        message_index:      args.message_index ?? 0,
         sport:              profiles.types.sport.values.cycling,
         sub_sport:          profiles.types.sub_sport.values.virtual_activity,
         ...args.stats,
         first_lap_index:    0,
-        num_laps:           args.num_laps,
+        num_laps:           args.laps?.length ?? 1,
     };
 }
 // END Special Data Messages

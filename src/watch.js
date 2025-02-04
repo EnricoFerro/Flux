@@ -389,6 +389,13 @@ xf.reg('watch:started',   (x, db) => {
 xf.reg('watch:paused',  (x, db) => db.watchStatus = 'paused');
 xf.reg('watch:stopped', (x, db) => db.watchStatus = 'stopped');
 
+function pad(xs = [], length = 0, value = 0) {
+    for(let i = xs.length-1; i < length; i += 1) {
+        xs.push(value);
+    }
+    return xs;
+}
+
 xf.reg('watch:elapsed', (x, db) => {
     if(equals(db.watchStatus, TimerStatus.stopped)) {
         db.elapsed   = x;
@@ -419,7 +426,12 @@ xf.reg('watch:elapsed', (x, db) => {
         device_index:                 0,
     };
 
+
     db.records.push(record);
+    if(!empty(db.rrInterval)) {
+        db.records.push({time: pad(db.rrInterval, 5, 0xFFFF)});
+    }
+
     db.lap.push(record);
 
     if(equals(db.elapsed % 60, 0)) {
