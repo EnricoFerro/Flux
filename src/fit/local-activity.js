@@ -24,8 +24,9 @@ function LocalActivity(args = {}) {
             if(records.length > 1) {
                 // if no events are recorded fallback to first and last record
                 return type.timestamp.elapsed(
-                    first(records)?.timestamp,
-                    last(records)?.timestamp,
+                    // TODO: handle record is not guaranteed to be a Record
+                    findFirstRecord(records)?.timestamp,
+                    findLastRecord(records)?.timestamp
                 );
             } else {
                 // if no events are recorded and no more than one record return 0
@@ -64,8 +65,8 @@ function LocalActivity(args = {}) {
             return 0;
         }
 
-        const start_time = first(events)?.timestamp ?? first(records)?.timestamp;
-        const timestamp = last(laps)?.timestamp ?? last(records)?.timestamp;
+        const start_time = first(events)?.timestamp ?? findFirstRecord(records)?.timestamp;
+        const timestamp = last(laps)?.timestamp ?? findLastRecord(records)?.timestamp;
 
         return type.timestamp.elapsed(start_time, timestamp);
     }
@@ -129,11 +130,13 @@ function LocalActivity(args = {}) {
             max_cadence: 0,
             max_speed: 0,
             max_heart_rate: 0,
-            total_distance: last(records)?.distance ?? 0,
+            total_distance: findLastRecord(records)?.distance ?? 0,
             total_calories: 0,
         };
 
-        const stats = records.reduce(function(acc, record, _, { length }) {
+        const stats = records
+              .filter(record => record.timestamp !== undefined)
+              .reduce(function(acc, record, _, { length }) {
             acc.avg_power      += record.power / length;
             acc.avg_cadence    += record.cadence / length;
             acc.avg_speed      += record.speed / length;
@@ -145,7 +148,7 @@ function LocalActivity(args = {}) {
             return acc;
         }, defaultStats);
 
-        stats.total_calories = Math.floor(stats.avg_power * total_timer_time * 0.00115);
+        stats.total_calories = Math.floor(stats.avg_power * total_timer_time * 0.001);
         stats.avg_power = Math.floor(stats.avg_power);
         stats.avg_cadence = Math.floor(stats.avg_cadence);
         stats.avg_heart_rate = Math.floor(stats.avg_heart_rate);

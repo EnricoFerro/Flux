@@ -982,8 +982,11 @@
                     <div class="device-card border-top">
                         <div class="device-card--cont">
                             <div class="device-card--header">
+                                <div></div>
                                 <div class="device-card--header--label">Controllable</div>
+                                <div></div>
                             </div>
+
                             <div class="device-card--body">
                                 <div class="device-card--body--row">
                                     <connection-switch for="ble:controllable"
@@ -1056,7 +1059,11 @@
                     <div class="device-card">
                         <div class="device-card--cont">
                             <div class="device-card--header">
+                                <div></div>
                                 <div class="device-card--header--label">Power Meter</div>
+                                <battery-level for="ble:powerMeter">
+                                    <div class="battery--level"></div>
+                                </battery-level>
                             </div>
                             <div class="device-card--body">
                                 <div class="device-card--body--row">
@@ -1117,7 +1124,11 @@
                     <div class="device-card">
                         <div class="device-card--cont">
                             <div class="device-card--header">
+                                <div></div>
                                 <div class="device-card--header--label">Speed and Cadence</div>
+                                <battery-level for="ble:speedCadenceSensor">
+                                    <div class="battery--level"></div>
+                                </battery-level>
                             </div>
                             <div class="device-card--body">
                                 <div class="device-card--body--row">
@@ -1165,7 +1176,13 @@
                     <!-- hrm settings -->
                     <div class="device-card">
                         <div class="device-card--cont">
-                            <div class="device-card--header--label">HRM</div>
+                            <div class="device-card--header">
+                                <div></div>
+                                <div class="device-card--header--label">HRM</div>
+                                <battery-level for="ble:heartRateMonitor">
+                                    <div class="battery--level"></div>
+                                </battery-level>
+                            </div>
                             <div class="device-card--body">
                                 <div class="device-card--body--row">
                                     <connection-switch for="ble:heartRateMonitor"
@@ -1254,7 +1271,11 @@
                     <div class="device-card">
                         <div class="device-card--cont">
                             <div class="device-card--header">
+                                <div></div>
                                 <div class="device-card--header--label">Moxy</div>
+                                <battery-level for="ble:smo2">
+                                    <div class="battery--level"></div>
+                                </battery-level>
                             </div>
                             <div class="device-card--body">
                                 <div class="device-card--body--row">
@@ -1303,7 +1324,11 @@
                     <div class="device-card">
                         <div class="device-card--cont">
                             <div class="device-card--header">
+                                <div></div>
                                 <div class="device-card--header--label">CoreTemp</div>
+                                <battery-level for="ble:coreTemp">
+                                    <div class="battery--level"></div>
+                                </battery-level>
                             </div>
                             <div class="device-card--body">
                                 <div class="device-card--body--row">
@@ -1434,7 +1459,7 @@
                             <p class="">This is an open-source project. For more information, please visit the <a class="a" href="https://github.com/dvmarinoff/Auuki">github</a> page. There you can get support or join the discussions.</p>
                         </div>
                         <div class="about--version">
-                            <p class="">Latest version: 0.3.6</p>
+                            <p class="">Latest version: 0.3.7</p>
                         </div>
                         <div class="about--version">
                             <p class="">Old stable version still available here: <a class="a" href="https://stable.auuki.com">0.1.43</a></p>
