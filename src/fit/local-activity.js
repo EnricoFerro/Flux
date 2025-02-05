@@ -330,48 +330,6 @@ function Session(args = {}) {
     };
 }
 
-function Lap(args = {}) {
-    return {
-        mesgNum: Profile.MesgNum.LAP,
-        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Lap needs timestamp.'))),
-        startTime: Utils.convertDateToDateTime(new Date(expect(args.start_time, 'Lap needs start_time.'))),
-        totalElapsedTime: expect(args.total_elapsed_time, 'Lap needs total_elapsed_time.'),
-        totalTimerTime: expect(args.total_timer_time, 'Lap needs total_timer_time'),
-        messageIndex: args.message_index ?? 0,
-        event: profiles.types?.event?.values?.lap ?? 9,
-        eventType: profiles.types?.event_type?.values?.stop ?? 1,
-    };
-}
-
-function Activity(args = {}) {
-    return {
-        mesgNum: Profile.MesgNum.ACTIVITY,
-        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Activity needs timestamp.'))),
-        totalTimerTime: expect(args.total_timer_time, 'Activity needs total_timer_time'),
-        numSessions: 1,
-        type: profiles.types.activity.values.manual,
-        event: profiles.types.event.values.activity,
-        eventType: profiles.types.event_type.values.stop,
-        // localTimestamp: args.timestamp,
-    };
-}
-
-function Session(args = {}) {
-    return {
-        mesgNum: Profile.MesgNum.SESSION,
-        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Session needs timestamp.'))),
-        startTime: Utils.convertDateToDateTime(new Date(expect(args.start_time, 'Session needs start_time.'))),
-        totalElapsedTime: expect(args.total_elapsed_time, 'Session needs total_elapsed_time.'),
-        totalTimerTime: expect(args.total_timer_time, 'Session needs total_timer_time'),
-        messageIndex: args.message_index,
-        sport: profiles.types.sport.values.cycling,
-        subSport: profiles.types.sub_sport.values.virtual_activity,
-        ...args.stats,
-        firstLapIndex: 0,
-        numLaps: args.num_laps,
-    };
-}
-
 function Record(args = {}) {
     const record = {
         mesgNum: Profile.MesgNum.RECORD,
