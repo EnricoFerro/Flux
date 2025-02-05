@@ -330,16 +330,6 @@ function Session(args = {}) {
     };
 }
 
-function Event(args = {}) {
-    return {
-        mesgNum: Profile.MesgNum.EVENT,
-        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Event needs timestamp.'))),
-        event: profiles?.types?.event_type?.values['timer'] ?? 0,
-        eventType: profiles?.types?.event_type?.values[args.type] ?? 0,
-        eventGroup: 0,
-    };
-}
-
 function Lap(args = {}) {
     return {
         mesgNum: Profile.MesgNum.LAP,
