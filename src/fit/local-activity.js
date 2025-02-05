@@ -10,31 +10,6 @@ import { EventType } from '../activity/enums.js';
 import { Encoder, Profile, Utils } from '@garmin/fitsdk';
 
 function LocalActivity(args = {}) {
-    const definitions = productMessageDefinitions
-          .reduce(function(acc, x) {
-              const d = definitionRecord.toFITjs(x);
-              acc[d.name] = d;
-              return acc;
-          }, {});
-
-    // [FITjs] -> {fileSize: Int, dataSize: Int}
-    function getSize(fitjs) {
-        // byteLength of the whole file start to end
-        // this is needed for the DataView size
-        const fileSize = fitjs.reduce(
-            (acc, x) => acc += (x?.length ?? 0), 0
-        );
-
-        // byteLength of the file minus the File Header and the CRC
-        // this is needed for the dataSize field in the file header
-        const header = first(fitjs);
-        const dataSize = fileSize - (header.length + CRC.size);
-
-        return {
-            fileSize,
-            dataSize,
-        };
-    }
 
     // [Record] -> Record?
     function findFirstRecord(records = []) {
@@ -207,7 +182,6 @@ function LocalActivity(args = {}) {
         const records = args.records ?? [];
         const laps = args.laps ?? [];
         const events = args.events ?? [];
-        const hrvs = args.hrvs ?? [];
 
         const activity_start_time = first(events)?.start_time ?? findFirstRecord(records).timestamp;
         const time_created = last(laps)?.timestamp ?? findLastRecord(records)?.timestamp;
@@ -227,97 +201,41 @@ function LocalActivity(args = {}) {
                 product:       3570,        // edge 1030
                 serialNumber: 3313379353,
 
-            // definition file_id
-            definitions.file_id,
-            // data file_id
-            dataRecord.toFITjs(
-                definitions.file_id,
-                FileId({
-                    time_created,
-                    manufacturer:  1,    // garmin
-                    product:       3570, // edge 1030
-                    serial_number: 3313379353,
-                })
-            ),
-
-            // definition file_creator
-            definitions.file_creator,
-            // data file_creator
-            dataRecord.toFITjs(
-                definitions.file_creator,
-                FileCreator({
-                    software_version: 29, // edge 1030
-                })
-            ),
-
-            // definition record
-            definitions.record,
-            // definition hrv
-            definitions.hrv,
-            // data record messages
-            ...records.map((record) =>
-                dataRecord.toFITjs(
-                    record.time === undefined ? definitions.record : definitions.hrv,
-                    record
-                )
-            ),
-
-            // definition events
-            definitions.event,
-            // data event messages
-            ...events.map((event) =>
-                dataRecord.toFITjs(
-                    definitions.event,
-                    Event(event)
-                )
-            ),
-
-            // definition lap
-            definitions.lap,
-            // data lap messages
-            ...laps.map((lap, message_index) =>
-                dataRecord.toFITjs(
-                    definitions.lap,
-                    Lap({
-                        total_elapsed_time: calcLapTotalElapsedTime(lap),
-                        total_timer_time: calcLapTotalTimerTime(lap, events),
-                        message_index,
-                        ...lap,
-                    })),
-            ),
-
-            // definition session
-            definitions.session,
-            // data session
-            dataRecord.toFITjs(
-                definitions.session,
-                Session({
-                    records,
-                    laps,
-                    events,
-                    definition: definitions.session,
-                    start_time: activity_start_time,
-                    timestamp,
-                    total_elapsed_time,
-                    total_timer_time,
-                    stats,
-                })
-            ),
-
-            // definition activity
-            definitions.activity,
-            // data activity
-            dataRecord.toFITjs(
-                definitions.activity,
-                Activity({
-                    timestamp,
-                    activity_start_time,
-                    total_elapsed_time,
-                    total_timer_time,
-                })
-            ),
-            // crc, needs to be computed last evetytime when encoding to binary
-            CRC.toFITjs(),
+            },
+            // file_creator
+            {
+                mesgNum: Profile.MesgNum.FILE_CREATOR,
+                softwareVersion: 2900, // edge 1030
+            },
+            // records
+            ...records.map(record => record.time === undefined ? Record(record) : HRV(record)), 
+            // events
+            ...events.map(event => Event(event)),
+            // laps
+            ...laps.map((lap, message_index) => Lap({
+                total_elapsed_time: calcLapTotalElapsedTime(lap),
+                total_timer_time: calcLapTotalTimerTime(lap, events),
+                message_index,
+                ...lap,
+            })),
+            // session
+            Session({
+                records,
+                laps,
+                events,
+                start_time: activity_start_time,
+                timestamp,
+                total_elapsed_time,
+                total_timer_time,
+                stats,
+            }),
+            // Activity
+            Activity({
+                timestamp,
+                activity_start_time,
+                total_elapsed_time,
+                total_timer_time,
+            })
         ];
 
         return structure;
@@ -471,6 +389,18 @@ function Record(args = {}) {
         coreTemperature: args.core_temperature,
         skinTemperature: args.skin_temperature,
     };
+    return record;
+}
+
+function HRV(args = {}) {
+    const hrv = {
+        mesgNum: Profile.MesgNum.HRV,
+        time: args.time,
+    };
+    return hrv;
+}
+
+function RecordWithHRV(args = {}) {
     const hrv = args.hrvs.find((hrv) => hrv.timestamp == args.timestamp);
     if (hrv && hrv.time && hrv.time.length > 0) {
         const hrvTime = [...hrv.time].map(hrv => hrv / 1000 );
