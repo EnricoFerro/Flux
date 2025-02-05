@@ -14,6 +14,29 @@ import { EventType } from '../activity/enums.js';
 import { Encoder, Profile, Utils } from '@garmin/fitsdk';
 
 function LocalActivity(args = {}) {
+
+    // [Record] -> Record?
+    function findFirstRecord(records = []) {
+        for(let i = 0; i < records.length; i+=1) {
+            if(records[i].timestamp !== undefined) {
+                return records[i];
+            }
+        }
+        console.error(`:fit :records 'has no valid records'`);
+        return records[0];
+    }
+
+    // [Record] -> Record?
+    function findLastRecord(records = []) {
+        for(let i = records.length-1; i >= 0 ; i-=1) {
+            if(records[i].timestamp !== undefined) {
+                return records[i];
+            }
+        }
+        console.error(`:fit :records 'has no valid records'`);
+        return records[0];
+    }
+
     // {records: [Record], events: [Event]} -> Int
     function calcTotalTimerTime(args) {
         const records = args.records ?? [];
@@ -202,7 +225,7 @@ function LocalActivity(args = {}) {
                 softwareVersion: 2900, // edge 1030
             },
             // records
-            ...records.flatMap(record => Record({ ...record, hrvs })),
+            ...records.map(record => record.time === undefined ? Record(record) : HRV(record)), 
             // events
             ...events.map(event => Event(event)),
             // laps
@@ -245,10 +268,6 @@ function LocalActivity(args = {}) {
             encoder.writeMesg(mesg);
         });
         return encoder.close()
-        /*
-        const fitjs = toFITjs(args);
-        return FITjs.encode(fitjs);
-        */
     }
 
     return Object.freeze({
@@ -259,6 +278,58 @@ function LocalActivity(args = {}) {
 }
 
 // Special Data Messages
+function Event(args = {}) {
+    return {
+        mesgNum: Profile.MesgNum.EVENT,
+        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Event needs timestamp.'))),
+        event: profiles?.types?.event_type?.values['timer'] ?? 0,
+        eventType: profiles?.types?.event_type?.values[args.type] ?? 0,
+        eventGroup: 0,
+    };
+}
+
+function Lap(args = {}) {
+    return {
+        mesgNum: Profile.MesgNum.LAP,
+        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Lap needs timestamp.'))),
+        startTime: Utils.convertDateToDateTime(new Date(expect(args.start_time, 'Lap needs start_time.'))),
+        totalElapsedTime: expect(args.total_elapsed_time, 'Lap needs total_elapsed_time.'),
+        totalTimerTime: expect(args.total_timer_time, 'Lap needs total_timer_time'),
+        messageIndex: args.message_index ?? 0,
+        event: profiles.types?.event?.values?.lap ?? 9,
+        eventType: profiles.types?.event_type?.values?.stop ?? 1,
+    };
+}
+
+function Activity(args = {}) {
+    return {
+        mesgNum: Profile.MesgNum.ACTIVITY,
+        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Activity needs timestamp.'))),
+        totalTimerTime: expect(args.total_timer_time, 'Activity needs total_timer_time'),
+        numSessions: 1,
+        type: profiles.types.activity.values.manual,
+        event: profiles.types.event.values.activity,
+        eventType: profiles.types.event_type.values.stop,
+        // localTimestamp: args.timestamp,
+    };
+}
+
+function Session(args = {}) {
+    return {
+        mesgNum: Profile.MesgNum.SESSION,
+        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Session needs timestamp.'))),
+        startTime: Utils.convertDateToDateTime(new Date(expect(args.start_time, 'Session needs start_time.'))),
+        totalElapsedTime: expect(args.total_elapsed_time, 'Session needs total_elapsed_time.'),
+        totalTimerTime: expect(args.total_timer_time, 'Session needs total_timer_time'),
+        messageIndex: args.message_index,
+        sport: profiles.types.sport.values.cycling,
+        subSport: profiles.types.sub_sport.values.virtual_activity,
+        ...args.stats,
+        firstLapIndex: 0,
+        numLaps: args.num_laps,
+    };
+}
+
 function Event(args = {}) {
     return {
         mesgNum: Profile.MesgNum.EVENT,
@@ -330,26 +401,17 @@ function Record(args = {}) {
         coreTemperature: args.core_temperature,
         skinTemperature: args.skin_temperature,
     };
-    const hrv = args.hrvs.find((hrv) => hrv.timestamp == args.timestamp);
-    if (hrv && hrv.time && hrv.time.length > 0) {
-        const hrvTime = [...hrv.time].map(hrv => hrv / 1000 );
-        //const hrvFit = [...hrv.time]
-        for(let i = hrvTime.length; i < 5; i++ ) {
-            hrvTime.push(null);
-        }
-       /*for(let i = hrvFit.length; i < 5; i++ ) {
-        
-        }*/
-       const hrvRecord = {
-              mesgNum: Profile.MesgNum.HRV,
-              time: hrvTime,
-       }
-       return [ record, hrvRecord];
-       
-    } else {
-        return [ record ]
-    }
+    return record;
 }
+
+function HRV(args = {}) {
+    const hrv = {
+        mesgNum: Profile.MesgNum.HRV,
+        time: args.time,
+    };
+    return hrv;
+}
+
 // END Special Data Messages
 
 const localActivity = LocalActivity();

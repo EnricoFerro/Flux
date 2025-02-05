@@ -428,13 +428,6 @@ xf.reg('watch:elapsed', (x, db) => {
     };
 
 
-    const hrv = {
-        timestamp: timestampNow,
-        time: db.rrIntervals,
-    };
-
-    db.hrvs.push(hrv);
-
     db.records.push(record);
     if(!empty(db.rrInterval)) {
         db.records.push({time: pad(db.rrInterval, 5, 0xFFFF)});
