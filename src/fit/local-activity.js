@@ -54,6 +54,17 @@ function LocalActivity(args = {}) {
         }, 0);
     }
 
+    // [Record] -> Record?
+    function findLastRecord(records = []) {
+        for(let i = records.length-1; i >= 0 ; i-=1) {
+            if(records[i].timestamp !== undefined) {
+                return records[i];
+            }
+        }
+        console.error(`:fit :records 'has no valid records'`);
+        return records[0];
+    }    
+
     // {records: [Record], laps: [Lap], events: [Event], } -> Int
     function calcTotalElapsedTime(args) {
         const records = args.records ?? [];
