@@ -11,7 +11,7 @@ let db = {
     // Data Screen
     power: models.power.default,
     heartRate: models.heartRate.default,
-    rrIntervals: models.rrIntervals.default,
+    rrInterval: [],
     cadence: models.cadence.default,
     speed: models.speed.default,
     sources: models.sources.default,
@@ -116,6 +116,10 @@ xf.reg(models.heartRate.prop, (heartRate, db) => {
 });
 xf.reg(models.rrIntervals.prop, (rrIntervals, db) => {
     db.rrIntervals = rrIntervals;
+});
+
+xf.reg('rrInterval', (rrInterval, db) => {
+    db.rrInterval = rrInterval;
 });
 
 xf.reg(models.power.prop, (power, db) => {

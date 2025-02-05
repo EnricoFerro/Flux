@@ -1291,6 +1291,45 @@ class ViewAction extends HTMLElement {
 customElements.define('view-action', ViewAction);
 
 
+class BatteryLevel extends HTMLElement {
+    constructor() {
+        super();
+    }
+    connectedCallback() {
+        const self = this;
+        this.abortController = new AbortController();
+        this.signal = { signal: self.abortController.signal };
+
+        this.for = this.getAttribute('for');
+        this.$level = this.querySelector('.battery--level');
+
+        xf.sub(`${this.for}:batteryLevel`, this.onUpdate.bind(this), this.signal);
+    }
+    disconnectedCallback() {
+        this.abortController.abort();
+    }
+    onUpdate(level) {
+        this.$level.style.width = `${level}%`;
+
+        this.classList.remove('ok');
+        this.classList.remove('low');
+        this.classList.remove('critical');
+
+        if(level < 11) {
+            this.classList.add('critical');
+            return;
+        }
+        if(level < 21) {
+            this.classList.add('low');
+            return;
+        }
+        this.classList.add('ok');
+    }
+}
+
+customElements.define('battery-level', BatteryLevel);
+
+
 class NavigationAction extends ViewAction {
     constructor() {
         super();
@@ -1694,4 +1733,5 @@ export {
 
     NavigationStack,
     ViewAction,
+    BatteryLevel,
 }

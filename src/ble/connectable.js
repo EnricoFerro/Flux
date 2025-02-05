@@ -7,6 +7,7 @@ import WCPS from './wcps/wcps.js';
 import CPS from './cps/cps.js';
 import CSCS from './cscs/cscs.js';
 import HRS from './hrs/hrs.js';
+import BAS from './bas/bas.js';
 import RCS from './rcs/rcs.js';
 import SMO2 from './moxy/smo2.js';
 import CoreTemp from './ct/ct.js';
@@ -443,12 +444,23 @@ function Connectable(args = {}) {
         const hasPower = hasService(uuids.cyclingPower);
         const hasCadence = hasService(uuids.speedCadence);
         const hasHeartRate = hasService(uuids.heartRate);
+        const hasBattery = hasService(uuids.battery);
         const hasRaceController = hasService(uuids.raceController);
         const hasSmo2 = hasService(uuids.smo2);
         const hasCoreTemp = hasService(uuids.coreTemp);
         const hasTrainerControl = hasFTMS || hasWCPS || hasFEC;
 
         // Order here is important
+        if(hasBattery) {
+            services['bas'] = BAS({
+                service: getService(uuids.battery),
+                onData: onData,
+            });
+            let res = await services.bas.setup();
+
+            services.bas.readBatteryLevel();
+            // always continue
+        }
         if(hasHeartRate) {
             // heart rate
             _deviceType = Device.heartRateMonitor;

@@ -10,6 +10,54 @@ import { EventType } from '../activity/enums.js';
 import { Encoder, Profile, Utils } from '@garmin/fitsdk';
 
 function LocalActivity(args = {}) {
+    const definitions = productMessageDefinitions
+          .reduce(function(acc, x) {
+              const d = definitionRecord.toFITjs(x);
+              acc[d.name] = d;
+              return acc;
+          }, {});
+
+    // [FITjs] -> {fileSize: Int, dataSize: Int}
+    function getSize(fitjs) {
+        // byteLength of the whole file start to end
+        // this is needed for the DataView size
+        const fileSize = fitjs.reduce(
+            (acc, x) => acc += (x?.length ?? 0), 0
+        );
+
+        // byteLength of the file minus the File Header and the CRC
+        // this is needed for the dataSize field in the file header
+        const header = first(fitjs);
+        const dataSize = fileSize - (header.length + CRC.size);
+
+        return {
+            fileSize,
+            dataSize,
+        };
+    }
+
+    // [Record] -> Record?
+    function findFirstRecord(records = []) {
+        for(let i = 0; i < records.length; i+=1) {
+            if(records[i].timestamp !== undefined) {
+                return records[i];
+            }
+        }
+        console.error(`:fit :records 'has no valid records'`);
+        return records[0];
+    }
+
+    // [Record] -> Record?
+    function findLastRecord(records = []) {
+        for(let i = records.length-1; i >= 0 ; i-=1) {
+            if(records[i].timestamp !== undefined) {
+                return records[i];
+            }
+        }
+        console.error(`:fit :records 'has no valid records'`);
+        return records[0];
+    }
+
     // {records: [Record], events: [Event]} -> Int
     function calcTotalTimerTime(args) {
         const records = args.records ?? [];
@@ -20,8 +68,9 @@ function LocalActivity(args = {}) {
             if(records.length > 1) {
                 // if no events are recorded fallback to first and last record
                 return type.timestamp.elapsed(
-                    first(records)?.timestamp,
-                    last(records)?.timestamp,
+                    // TODO: handle record is not guaranteed to be a Record
+                    findFirstRecord(records)?.timestamp,
+                    findLastRecord(records)?.timestamp
                 );
             } else {
                 // if no events are recorded and no more than one record return 0
@@ -60,8 +109,8 @@ function LocalActivity(args = {}) {
             return 0;
         }
 
-        const start_time = first(events)?.timestamp ?? first(records)?.timestamp;
-        const timestamp = last(laps)?.timestamp ?? last(records)?.timestamp;
+        const start_time = first(events)?.timestamp ?? findFirstRecord(records)?.timestamp;
+        const timestamp = last(laps)?.timestamp ?? findLastRecord(records)?.timestamp;
 
         return type.timestamp.elapsed(start_time, timestamp);
     }
@@ -125,11 +174,13 @@ function LocalActivity(args = {}) {
             max_cadence: 0,
             max_speed: 0,
             max_heart_rate: 0,
-            total_distance: last(records)?.distance ?? 0,
+            total_distance: findLastRecord(records)?.distance ?? 0,
             total_calories: 0,
         };
 
-        const stats = records.reduce(function(acc, record, _, { length }) {
+        const stats = records
+              .filter(record => record.timestamp !== undefined)
+              .reduce(function(acc, record, _, { length }) {
             acc.avg_power      += record.power / length;
             acc.avg_cadence    += record.cadence / length;
             acc.avg_speed      += record.speed / length;
@@ -141,7 +192,7 @@ function LocalActivity(args = {}) {
             return acc;
         }, defaultStats);
 
-        stats.total_calories = Math.floor(stats.avg_power * total_timer_time / 1000);
+        stats.total_calories = Math.floor(stats.avg_power * total_timer_time * 0.001);
         stats.avg_power = Math.floor(stats.avg_power);
         stats.avg_cadence = Math.floor(stats.avg_cadence);
         stats.avg_heart_rate = Math.floor(stats.avg_heart_rate);
@@ -158,9 +209,8 @@ function LocalActivity(args = {}) {
         const events = args.events ?? [];
         const hrvs = args.hrvs ?? [];
 
-        const activity_start_time = first(events)?.start_time ?? first(records).timestamp;
-        const time_created = last(laps)?.timestamp ?? last(records)?.timestamp;
-        const startTime = Utils.convertDateToDateTime(new Date(time_created));
+        const activity_start_time = first(events)?.start_time ?? findFirstRecord(records).timestamp;
+        const time_created = last(laps)?.timestamp ?? findLastRecord(records)?.timestamp;
         const timestamp    = time_created;
         const total_elapsed_time = calcTotalElapsedTime({records, laps, events});
         const total_timer_time = calcTotalTimerTime({records, events});
@@ -177,41 +227,97 @@ function LocalActivity(args = {}) {
                 product:       3570,        // edge 1030
                 serialNumber: 3313379353,
 
-            },
-            // file_creator
-            {
-                mesgNum: Profile.MesgNum.FILE_CREATOR,
-                softwareVersion: 2900, // edge 1030
-            },
-            // records
-            ...records.flatMap(record => Record({ ...record, hrvs })),
-            // events
-            ...events.map(event => Event(event)),
-            // laps
-            ...laps.map((lap, message_index) => Lap({
-                total_elapsed_time: calcLapTotalElapsedTime(lap),
-                total_timer_time: calcLapTotalTimerTime(lap, events),
-                message_index,
-                ...lap,
-            })),
-            // session
-            Session({
-                records,
-                laps,
-                events,
-                start_time: activity_start_time,
-                timestamp,
-                total_elapsed_time,
-                total_timer_time,
-                stats,
-            }),
-            // Activity
-            Activity({
-                timestamp,
-                activity_start_time,
-                total_elapsed_time,
-                total_timer_time,
-            })
+            // definition file_id
+            definitions.file_id,
+            // data file_id
+            dataRecord.toFITjs(
+                definitions.file_id,
+                FileId({
+                    time_created,
+                    manufacturer:  1,    // garmin
+                    product:       3570, // edge 1030
+                    serial_number: 3313379353,
+                })
+            ),
+
+            // definition file_creator
+            definitions.file_creator,
+            // data file_creator
+            dataRecord.toFITjs(
+                definitions.file_creator,
+                FileCreator({
+                    software_version: 29, // edge 1030
+                })
+            ),
+
+            // definition record
+            definitions.record,
+            // definition hrv
+            definitions.hrv,
+            // data record messages
+            ...records.map((record) =>
+                dataRecord.toFITjs(
+                    record.time === undefined ? definitions.record : definitions.hrv,
+                    record
+                )
+            ),
+
+            // definition events
+            definitions.event,
+            // data event messages
+            ...events.map((event) =>
+                dataRecord.toFITjs(
+                    definitions.event,
+                    Event(event)
+                )
+            ),
+
+            // definition lap
+            definitions.lap,
+            // data lap messages
+            ...laps.map((lap, message_index) =>
+                dataRecord.toFITjs(
+                    definitions.lap,
+                    Lap({
+                        total_elapsed_time: calcLapTotalElapsedTime(lap),
+                        total_timer_time: calcLapTotalTimerTime(lap, events),
+                        message_index,
+                        ...lap,
+                    })),
+            ),
+
+            // definition session
+            definitions.session,
+            // data session
+            dataRecord.toFITjs(
+                definitions.session,
+                Session({
+                    records,
+                    laps,
+                    events,
+                    definition: definitions.session,
+                    start_time: activity_start_time,
+                    timestamp,
+                    total_elapsed_time,
+                    total_timer_time,
+                    stats,
+                })
+            ),
+
+            // definition activity
+            definitions.activity,
+            // data activity
+            dataRecord.toFITjs(
+                definitions.activity,
+                Activity({
+                    timestamp,
+                    activity_start_time,
+                    total_elapsed_time,
+                    total_timer_time,
+                })
+            ),
+            // crc, needs to be computed last evetytime when encoding to binary
+            CRC.toFITjs(),
         ];
 
         return structure;
@@ -275,17 +381,22 @@ function Activity(args = {}) {
 
 function Session(args = {}) {
     return {
-        mesgNum: Profile.MesgNum.SESSION,
-        timestamp: Utils.convertDateToDateTime(new Date(expect(args.timestamp, 'Session needs timestamp.'))),
-        startTime: Utils.convertDateToDateTime(new Date(expect(args.start_time, 'Session needs start_time.'))),
-        totalElapsedTime: expect(args.total_elapsed_time, 'Session needs total_elapsed_time.'),
-        totalTimerTime: expect(args.total_timer_time, 'Session needs total_timer_time'),
-        messageIndex: args.message_index,
-        sport: profiles.types.sport.values.cycling,
-        subSport: profiles.types.sub_sport.values.virtual_activity,
+        timestamp: expect(args.timestamp, 'Session needs timestamp.'),
+        start_time: expect(args.start_time, 'Session needs start_time.'),
+        total_elapsed_time: expect(
+            args.total_elapsed_time,
+            'Session needs total_elapsed_time.'
+        ),
+        total_timer_time: expect(
+            args.total_timer_time,
+            'Session needs total_timer_time'
+        ),
+        message_index:      args.message_index ?? 0,
+        sport:              profiles.types.sport.values.cycling,
+        sub_sport:          profiles.types.sub_sport.values.virtual_activity,
         ...args.stats,
-        firstLapIndex: 0,
-        numLaps: args.num_laps,
+        first_lap_index:    0,
+        num_laps:           args.laps?.length ?? 1,
     };
 }
 
