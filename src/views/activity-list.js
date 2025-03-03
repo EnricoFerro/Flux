@@ -79,10 +79,10 @@ class ActivityList extends HTMLElement {
                                     </div>
                                 </view-action>
                                 <view-action
-                                    class="activity--action"
+                                    class=""
                                     action=":options"
                                     topic=":activity:${this.id(data)}">
-                                    <svg class="activity--icon activity--options--button">
+                                    <svg class="control--btn--icon" width="24" height="24">
                                         <use href="#icon--options" />
                                     </svg>
                                 </view-action>
@@ -96,7 +96,7 @@ class ActivityList extends HTMLElement {
                                         class="activity--action action--intervals"
                                         action=":intervals:upload"
                                         topic=":activity:${this.id(data)}">
-                                        <svg class="activity--icon intervals--icon">
+                                        <svg class="activity--icon intervals--icon" width="24" height="24">
                                             <use href="#icon--intervals" />
                                         </svg>
                                         <div class="connection-icon-switch--indicator ${status.intervals ?? 'none'} intervals"></div>
@@ -106,7 +106,7 @@ class ActivityList extends HTMLElement {
                                         class="activity--action"
                                         action=":strava:upload"
                                         topic=":activity:${this.id(data)}">
-                                        <svg class="activity--icon strava--icon">
+                                        <svg class="activity--icon strava--icon" width="24" height="24">
                                             <use href="#icon--strava" />
                                         </svg>
                                         <div class="connection-icon-switch--indicator ${status.strava ?? 'none'} strava"></div>

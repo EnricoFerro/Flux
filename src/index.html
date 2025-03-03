@@ -52,7 +52,7 @@
 
                         <div class="data-tiles">
                             <div class="data-tile--small wide" id="data-tile--power-avg">
-                                <z-stack>
+                                <z-stack data-key="kcalZStack">
                                     <z-stack-item class="active">
                                         <h2 class="data-tile-small--heading">Power Lap</h2>
                                         <div class="data-tile-small--value-cont">
@@ -78,7 +78,7 @@
                             </div>
 
                             <div class="data-tile" id="data-tile--power">
-                                <z-stack>
+                                <z-stack data-key="powerZStack">
                                     <z-stack-item class="active">
                                         <h2 class="data-tile--heading">Power</h2>
                                         <div class="data-tile--value-cont">
@@ -106,7 +106,7 @@
                                 </div>
                             </div>
                             <div class="data-tile" id="data-tile--heart-rate">
-                                <z-stack>
+                                <z-stack data-key="heartRateZStack">
                                     <z-stack-item class="active">
                                         <h2 class="data-tile--heading">Heart Rate</h2>
                                         <div class="data-tile--value-cont">
@@ -145,23 +145,31 @@
                             </div>
 
                             <div class="data-tile" id="data-tile--target">
-                                <h2 class="data-tile--heading">Target</h2>
-                                <div class="data-tile--value-cont">
-                                    <companion-group class="data-tile--value-cont complex">
-                                        <power-target
-                                            id=power-target-value"
-                                            class="companion-main data-tile--value">
-                                            --
-                                        </power-target>
-                                        <power-target-ftp
-                                            id="power-target-ftp"
-                                            class="companion-aux data-tile-target--value">
-                                            --
-                                        </power-ftp-value>
-                                    </companion-group>
-                                </div>
-
-
+                                <z-stack data-key="powerTargetZStack">
+                                    <z-stack-item class="active">
+                                        <h2 class="data-tile--heading">Target</h2>
+                                        <div class="data-tile--value-cont">
+                                            <power-target
+                                                class="companion-main data-tile--value">
+                                                --
+                                            </power-target>
+                                        </div>
+                                    </z-stack-item>
+                                    <z-stack-item>
+                                        <h2 class="data-tile--heading">Target</h2>
+                                        <div class="data-tile--value-cont complex">
+                                            <power-target
+                                                class="data-tile--value active">
+                                                --
+                                            </power-target>
+                                            <power-target-ftp
+                                                id="power-target-ftp"
+                                                class="data-tile-target--value active">
+                                                --
+                                            </power-ftp-value>
+                                        </div>
+                                    </z-stack-item>
+                                </z-stack>
                             </div>
                             <div class="data-tile" id="data-tile--elapsed-time">
                                 <h2 class="data-tile--heading">Elapsed Time</h2>
@@ -171,7 +179,7 @@
                                 </div>
                             </div>
                             <div class="data-tile" id="data-tile--cadence">
-                                <z-stack>
+                                <z-stack data-key="cadenceZStack">
                                     <z-stack-item class="active">
                                         <h2 class="data-tile--heading">Cadence</h2>
                                         <cadence-value id=cadence-value"
@@ -257,8 +265,25 @@
                         </div> <!-- end data-tiles -->
 
                         <div id="graph-power" class="graph">
-                            <h4 class="graph--heading">Power</h4>
-                            <instant-power-graph class="graph--cont"></instant-power-graph>
+                            <auto-start-counter class="">3</auto-start-counter>
+                            <!-- <z-stack data-key="graphZStack">
+                                 <z-stack-item class="active"> -->
+                                    <h4 class="graph--heading">Graph</h4>
+                                    <moxy-graph class="graph--cont">
+                                        <svg id="moxy-svg">
+                                            <polyline id="moxy-path-smo2" class="moxy--path" points=""/>
+                                            <polyline id="moxy-path-thb" class="moxy--path" points=""/>
+                                            <polyline id="moxy-path-hr" class="moxy--path" points=""/>
+                                            <polyline id="moxy-path-power" class="moxy--path" points=""/>
+                                        </svg>
+                                    </moxy-graph>
+                                    <!-- </z-stack-item>
+                                         <z-stack-item>
+                                         <h4 class="graph--heading">Power</h4>
+                                         <instant-power-graph class="graph--cont">
+                                         </instant-power-graph>
+                                         </z-stack-item>
+                                         </z-stack> -->
                         </div>
 
                         <div id="graph-workout" class="graph">
@@ -906,25 +931,27 @@
                         </button>
                     </div> <!-- end settings btn row -->
 
-                    <div class="protocol-settings settings-btn-row">
-                        <div class="protocol-btn flat-btn settings-switch-btn-cont">
-                            <svg class="protocol-btn--icon icon">
-                                <use href="#icon--bluetooth"></use>
-                            </svg>
-                            <span class="protocol-btn--label">BLE</span>
-                        </div>
+                    <!-- protocol-settings -->
+                    <!-- <div class="protocol-settings settings-btn-row">
+                         <div class="protocol-btn flat-btn settings-switch-btn-cont">
+                         <svg class="protocol-btn--icon icon">
+                         <use href="#icon--bluetooth"></use>
+                         </svg>
+                         <span class="protocol-btn--label">BLE</span>
+                         </div>
 
-                        <div class="protocol-btn flat-btn settings-switch-btn-cont">
-                            <protocol-switch for="ant:driver" id="switch-controllable" class="protocol-switch ant-switch off">
-                                <svg class="protocol-btn--icon icon" xmlns="http://www.w3.org/2000/svg"
-                                    height="24" viewBox="0 0 24 24" width="24">
-                                    <path d="M22 9V7h-2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2v-2h-2V9h2zm-4 10H4V5h14v14zM6 13h5v4H6zm6-6h4v3h-4zM6 7h5v5H6zm6 4h4v6h-4z"/>
-                                    <path d="M0 0h24v24H0zm0 0h24v24H0z" fill="none"/>
-                                </svg>
-                                <span class="connection-switch--label protocol-btn--label">ANT+</span>
-                            </protocol-switch>
-                        </div>
-                    </div>
+                         <div class="protocol-btn flat-btn settings-switch-btn-cont">
+                         <protocol-switch for="ant:driver" id="switch-controllable" class="protocol-switch ant-switch off">
+                         <svg class="protocol-btn--icon icon" xmlns="http://www.w3.org/2000/svg"
+                         height="24" viewBox="0 0 24 24" width="24">
+                         <path d="M22 9V7h-2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2v-2h-2V9h2zm-4 10H4V5h14v14zM6 13h5v4H6zm6-6h4v3h-4zM6 7h5v5H6zm6 4h4v6h-4z"/>
+                         <path d="M0 0h24v24H0zm0 0h24v24H0z" fill="none"/>
+                         </svg>
+                         <span class="connection-switch--label protocol-btn--label">ANT+</span>
+                         </protocol-switch>
+                         </div>
+                         </div> -->
+                    <!-- end protocol-settings -->
 
                     <!-- controlable settings -->
                     <div class="device-card border-top">
@@ -957,43 +984,47 @@
                                                     use="ble:controllable">
                                             <h3 class="device-card--tile--header">Power</h3>
                                             <power-value class="data-view device-card--tile--value" prop="db:power1s">--</power-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
+
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="cadence"
-                                                    use="ble:controllable">
+                                                       for="cadence"
+                                                       use="ble:controllable">
                                             <h3 class="device-card--tile--header">Cadence</h3>
                                             <cadence-value class="data-view device-card--tile--value">--</cadence-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="speed"
-                                                    use="ble:controllable">
+                                                       for="speed"
+                                                       use="ble:controllable">
                                             <h3 class="device-card--tile--header">Speed</h3>
                                             <speed-value class="data-view device-card--tile--value">--</speed-value>
-
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="heartRate"
-                                                    use="ble:controllable">
+                                                       for="heartRate"
+                                                       use="ble:controllable">
                                             <h3 class="device-card--tile--header">Heart Rate</h3>
                                             <heart-rate-value class="data-view device-card--tile--value">--</heart-rate-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                 </div>
@@ -1035,32 +1066,34 @@
                                                     use="ble:powerMeter">
                                             <h3 class="device-card--tile--header">Power</h3>
                                             <power-value class="data-view device-card--tile--value" prop="db:power1s">--</power-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="cadence"
-                                                    use="ble:powerMeter">
+                                                       for="cadence"
+                                                       use="ble:powerMeter">
                                             <h3 class="device-card--tile--header">Cadence</h3>
                                             <cadence-value class="data-view device-card--tile--value">--</cadence-value>
-
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="speed"
-                                                    use="ble:powerMeter">
+                                                       for="speed"
+                                                       use="ble:powerMeter">
                                             <h3 class="device-card--tile--header">Speed</h3>
                                             <speed-value class="data-view device-card--tile--value">--</speed-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                 </div>
@@ -1100,20 +1133,22 @@
                                                     use="ble:speedCadenceSensor">
                                             <h3 class="device-card--tile--header">Cadence</h3>
                                             <cadence-value class="data-view device-card--tile--value">--</cadence-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="speed"
-                                                    use="ble:speedCadenceSensor">
+                                                       for="speed"
+                                                       use="ble:speedCadenceSensor">
                                             <h3 class="device-card--tile--header">Speed</h3>
                                             <speed-value class="data-view device-card--tile--value">--</speed-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                 </div>
@@ -1155,9 +1190,10 @@
                                                     use="ble:heartRateMonitor">
                                             <h3 class="device-card--tile--header">Cadence</h3>
                                             <cadence-value class="data-view device-card--tile--value">--</cadence-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile"></div>
@@ -1168,9 +1204,10 @@
                                             <h3 class="device-card--tile--header">Heart Rate</h3>
                                             <heart-rate-value id="hrm-heartRate"
                                                             class="data-view device-card--tile--value">--</heart-rate-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                 </div>
@@ -1247,20 +1284,22 @@
                                                     use="ble:smo2">
                                             <h3 class="device-card--tile--header">SmO2</h3>
                                             <smo2-value class="data-view device-card--tile--value">--</smo2-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="thb"
-                                                    use="ble:smo2">
+                                                       for="thb"
+                                                       use="ble:smo2">
                                             <h3 class="device-card--tile--header">THb</h3>
                                             <thb-value class="data-view device-card--tile--value">--</thb-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                 </div>
@@ -1300,31 +1339,36 @@
                                                     use="ble:coreTemp">
                                             <h3 class="device-card--tile--header">Core</h3>
                                             <core-body-temperature-value class="data-view device-card--tile--value">--</core-body-temperature-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="skinTemperature"
-                                                    use="ble:coreTemp">
+                                                       for="skinTemperature"
+                                                       use="ble:coreTemp">
                                             <h3 class="device-card--tile--header">Skin</h3>
                                             <skin-temperature-value class="data-view device-card--tile--value">--</skin-temperature-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                     <div class="device-card--tile">
+                                    </div>
+                                    <div class="device-card--tile">
                                         <source-switch class="source-switch"
-                                                    for="heartRate"
-                                                    use="ble:coreTemp">
+                                                       for="heartRate"
+                                                       use="ble:coreTemp">
                                             <h3 class="device-card--tile--header">Heart Rate</h3>
                                             <heart-rate-value class="data-view device-card--tile--value">--</heart-rate-value>
-                                            <toggle-button class="flat-toggle">
-                                                <div class="toggle"></div>
-                                            </toggle-button>
+                                            <svg class="toggle--button">
+                                                <use class="on" href="#icon--toggle--on"></use>
+                                                <use class="off" href="#icon--toggle--off"></use>
+                                            </svg>
                                         </source-switch>
                                     </div>
                                 </div>
@@ -1343,31 +1387,25 @@
                             <div class="list--row--inner option">
                                 <div class="option--name">Sound</div>
                                 <sound-control class="option--value sound--row">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        id="sound--mute"
-                                        class="sound--control sound--row--item"
-                                        viewBox="0 0 24 24"
-                                        fill="#FFFFFF">
-                                        <path d="M0 0h24v24H0V0z" fill="none"/>
-                                        <path d="M7 9v6h4l5 5V4l-5 5H7z"/>
+                                    <svg id="sound--mute"
+                                         class="sound--item control--btn--icon"
+                                         width="24px"
+                                         height="24px">
+                                        <use href="#icon--sound--mute"></use>
                                     </svg>
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        id="sound--down"
-                                        class="sound--control sound--row--item"
-                                        viewBox="0 0 24 24"
-                                        fill="#FFFFFF">
-                                        <path d="M0 0h24v24H0V0z" fill="none"/>
-                                        <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>
+                                    <svg id="sound--down"
+                                         class="sound--item control--btn--icon"
+                                         width="24px"
+                                         height="24px">
+                                        <use href="#icon--sound--down"></use>
                                     </svg>
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                            id="sound--up"
-                                            class="sound--control sound--row--item"
-                                            viewBox="0 0 24 24"
-                                            fill="#FFFFFF">
-                                        <path d="M0 0h24v24H0V0z" fill="none"/>
-                                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                                    <svg id="sound--up"
+                                         class="sound--item control--btn--icon"
+                                         width="24px"
+                                         height="24px">
+                                        <use href="#icon--sound--up"></use>
                                     </svg>
-                                    <div id="sound--volume" class="sound--volume sound--row--item">
+                                    <div id="sound--volume" class="sound--volume sound--item">
                                         100%
                                     </div>
                                 </sound-control>
@@ -1378,6 +1416,15 @@
                             <div class="list--row--inner option">
                                 <div class="option--name">Simulation</div>
                                 <virtual-state-source class="option--value">power</virtual-state-source>
+                            </div>
+                        </div>
+
+                        <div class="list--row--outer">
+                            <div class="list--row--inner option">
+                                <div class="option--name">Auto Start</div>
+                                <auto-start class="option--value">
+                                    ON
+                                </auto-start>
                             </div>
                         </div>
 
@@ -1407,7 +1454,7 @@
                             <p class="">This is an open-source project. For more information, please visit the <a class="a" href="https://github.com/dvmarinoff/Auuki">github</a> page. There you can get support or join the discussions.</p>
                         </div>
                         <div class="about--version">
-                            <p class="">Latest version: 0.3.7</p>
+                            <p class="">Latest version: 0.3.9</p>
                         </div>
                         <div class="about--version">
                             <p class="">Old stable version still available here: <a class="a" href="https://stable.auuki.com">0.1.43</a></p>
@@ -1430,38 +1477,38 @@
                 <workout-name id="workout-name">Free ride</workout-name>
                 <watch-control id="watch" class="watch">
                     <div id="watch-start" class="control--btn">
-                        <svg class="control--btn--icon">
+                        <svg class="control--btn--icon" width="24" height="24">
                             <use href="#icon--play-btn" />
                         </svg>
                     </div>
 
-                    <div id="watch-pause" class="control--btn">
-                        <svg class="control--btn--icon">
+                    <div id="watch-pause" class="control--btn" >
+                        <svg class="control--btn--icon" width="24" height="24">
                             <use href="#icon--pause-btn" />
                         </svg>
                     </div>
 
                     <div id="watch-back" class="control--btn">
-                        <svg class="control--btn--icon">
+                        <svg class="control--btn--icon" width="24" height="24">
                             <use href="#icon--skip-previous-btn"></use>
                         </svg>
                     </div>
 
                     <div id="watch-lap" class="control--btn">
-                        <svg class="control--btn--icon">
+                        <svg class="control--btn--icon" width="24" height="24">
                             <use href="#icon--watch-btn"></use>
                         </svg>
                     </div>
 
                     <div id="watch-stop" class="control--btn">
-                        <svg class="control--btn--icon">
+                        <svg class="control--btn--icon" width="24" height="24">
                             <use href="#icon--stop-btn"></use>
                         </svg>
                     </div>
 
                     <div id="activity-save" class="control--btn">
-                        <svg class="control--btn--icon">
-                            <use href="#icon--save-btn"></use>
+                        <svg class="control--btn--icon" width="24" height="24">
+                            <use href="#icon--file"></use>
                         </svg>
                     </div>
                 </watch-control> <!-- end controls -->
@@ -1533,18 +1580,15 @@
                 <path d="M4 10h12v2H4zm0-4h12v2H4zm0 8h8v2H4zm10 0v6l5-3z"/>
             </symbol>
 
-            <symbol id="icon--play-btn"
-                    height="24" viewBox="0 0 24 24" width="24">
+            <symbol id="icon--play-btn" viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0V0z" fill="none"/>
                 <path d="M8 5v14l11-7L8 5z"/>
             </symbol>
-            <symbol id="icon--pause-btn"
-                    height="24" viewBox="0 0 24 24" width="24">
+            <symbol id="icon--pause-btn" viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0V0z" fill="none"/>
                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
             </symbol>
-            <symbol id="icon--watch-btn"
-                    height="24" viewBox="0 0 24 24" width="24">
+            <symbol id="icon--watch-btn" viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0V0z" fill="none"/>
                 <path d="M15 1H9v2h6V1zm-4
                             13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42
@@ -1552,34 +1596,33 @@
                             9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7
                             7-7 7 3.13 7 7-3.13 7-7 7z"/>
             </symbol>
-            <symbol id="icon--skip-previous-btn" height="24" viewBox="0 0 24 24" width="24">
+            <symbol id="icon--skip-previous-btn" viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0V0z" fill="none"/>
                 <path d="M6 6h2v12H6V6zm3.5 6l8.5 6V6l-8.5 6z"/>
             </symbol>
-            <symbol id="icon--stop-btn"
-                    height="24" viewBox="0 0 24 24" width="24">
+            <symbol id="icon--stop-btn" viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0V0z" fill="none"/>
                 <path d="M6 6h12v12H6V6z"/>
             </symbol>
             <symbol id="icon--save-btn"
-                    height="24" viewBox="0 0 24 24" width="24">
+                    viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0V0z" fill="none"/>
                 <path d="M19 12v7H5v-7H3v9h18v-9h-2zm-6 .67l2.59-2.58L17
                             11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/>
             </symbol>
 
-            <symbol id="icon--radio-off" class="radio radio-off" height="24" viewBox="0 0 24 24" width="24">
+            <symbol id="icon--radio-off" class="radio radio-off" viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0V0z" fill="none"/>
                 <path class="path" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12
                              2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
             </symbol>
-            <symbol id="icon--radio-on" class="radio radio-on" height="24" viewBox="0 0 24 24" width="24">
+            <symbol id="icon--radio-on" class="radio radio-on" viewBox="0 0 24 24">
                 <path d="M0 0h24v24H0V0z" fill="none"/>
                 <path class="path" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0
                              18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
                 <circle class="circle" cx="12" cy="12" r="5"/>
             </symbol>
-            <symbol id="icon--options" class="workout--options-btn control--btn--icon" height="24" viewBox="0 -960 960 960" width="24">
+            <symbol id="icon--options" class="workout--options-btn control--btn--icon" viewBox="0 -960 960 960">
                 <path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/>
             </symbol>
 
@@ -1612,6 +1655,29 @@
             </symbol>
             <symbol id="icon--image" viewBox="0 -960 960 960">
                 <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm40-80h480L570-480 450-320l-90-120-120 160Zm-40 80v-560 560Z"/>
+            </symbol>
+            <symbol id="icon--file" viewBox="0 -960 960 960">
+                <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
+            </symbol>
+            <symbol id="icon--toggle--on" viewBox="0 0 33 20" fill="none">
+                <rect x="1.5" y="1.5" width="30" height="17" rx="8.5" stroke="#FFFFFF" stroke-width="3"/>
+                <circle cx="23" cy="10" r="5" fill="#FFFFFF"/>
+            </symbol>
+            <symbol id="icon--toggle--off" viewBox="0 0 33 20" fill="none">
+                <rect x="1.5" y="1.5" width="30" height="17" rx="8.5" stroke="#AAAAAA" stroke-width="3"/>
+                <circle cx="10" cy="10" r="5" fill="#AAAAAA"/>
+            </symbol>
+            <symbol id="icon--sound--mute" viewBox="0 0 24 24" fill="#FFFFFF">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M7 9v6h4l5 5V4l-5 5H7z"/>
+            </symbol>
+            <symbol id="icon--sound--down" viewBox="0 0 24 24" fill="#FFFFFF">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/>
+            </symbol>
+            <symbol id="icon--sound--up" viewBox="0 0 24 24" fill="#FFFFFF">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
             </symbol>
         </svg>
     </body>

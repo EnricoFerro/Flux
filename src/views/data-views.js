@@ -89,6 +89,47 @@ class DataView extends HTMLElement {
 customElements.define('data-view', DataView);
 
 
+class AutoStartCounter extends HTMLElement {
+    constructor() {
+        super();
+        this.isVisible = false;
+    }
+    connectedCallback() {
+        const self = this;
+        this.abortController = new AbortController();
+        this.signal = { signal: self.abortController.signal };
+
+        xf.sub('ui:autoStartCounter', this.onUpdate.bind(this), this.signal);
+    }
+    disconnectedCallback() {
+        this.abortController.abort();
+    }
+    onUpdate(value) {
+        if(value === -1) {
+            this.hide();
+        } else {
+            if(!this.isVisible) {
+                this.show();
+            }
+            this.render(value);
+        }
+    }
+    show() {
+        this.classList.add('active');
+    }
+    hide() {
+        this.classList.remove('active');
+    }
+    render(value) {
+        this.textContent = value;
+    }
+}
+
+customElements.define('auto-start-counter', AutoStartCounter);
+
+
+
+
 class TimerTime extends DataView {
     getDefaults() {
         return {
@@ -357,6 +398,10 @@ class HeartRateValue extends DataView {
             prop: 'db:heartRate',
         };
     }
+    transform(state) {
+        this.style = 'color: #FE340B';
+        return Math.round(state);
+    }
 }
 
 customElements.define('heart-rate-value', HeartRateValue);
@@ -402,13 +447,14 @@ class SmO2Value extends DataView {
     // this.style = 'color: #278B65';
     // this.style = 'color: #D72A1C';
     transform(state) {
-        if(state < models.smo2.zones.one) {
-            this.style = 'color: #328AFF';
-        } else if(state < models.smo2.zones.two) {
-            this.style = 'color: #56C057';
-        } else {
-            this.style = 'color: #FE340B';
-        }
+        // if(state < models.smo2.zones.one) {
+        //     this.style = 'color: #328AFF';
+        // } else if(state < models.smo2.zones.two) {
+        //     this.style = 'color: #56C057';
+        // } else {
+        //     this.style = 'color: #FE340B';
+        // }
+        this.style = 'color: #56C057';
         return toFixed(state, 1);
     }
 }
@@ -426,6 +472,7 @@ class THbValue extends DataView {
         xf.sub(`${this.prop}`, this.onUpdate.bind(this), this.signal);
     }
     transform(state) {
+        this.style = 'color: #FF663A';
         return toFixed(state, 2);
     }
 }
@@ -489,6 +536,7 @@ class SkinTemperatureValue extends DataView {
 customElements.define('skin-temperature-value', SkinTemperatureValue);
 
 
+
 class WorkoutName extends DataView {
     getDefaults() {
         return {
@@ -510,6 +558,8 @@ class PowerTarget extends DataView {
         };
     }
 }
+
+customElements.define('power-target', PowerTarget);
 
 class PowerTargetFTP extends DataView {
     getDefaults() {
@@ -565,34 +615,61 @@ class CompanionGroup extends DataView {
 
 customElements.define('companion-group', CompanionGroup);
 
-class ZStack extends DataView {
-    getDefaults() {
-        return {
-            prop: '',
-            items: [],
-            active: 0,
-        };
-    }
-    postInit() {
+class ZStack extends HTMLElement {
+    constructor() {
+        super();
         this.items = [];
-        this.active = 0;
+        this.activeIndex = 0;
     }
-    config() {
+    connectedCallback() {
+        const self = this;
+        this.abortController = new AbortController();
+        this.signal = { signal: self.abortController.signal };
+
         this.$items = this.querySelectorAll('z-stack-item');
+        this.key = this.dataset.key;
+        this.persistance = exists(this.key) ? true : false;
+        this.hasSwitchSub = exists(this.dataset.sub);
+
+        if(this.hasSwitchSub) {
+            xf.sub(this.$sub, this.onSwitch.bind(this), this.signal);
+        } else {
+            this.addEventListener(`pointerup`, this.onSwitch.bind(this), this.signal);
+        }
+
+        if(this.persistance) {
+            xf.sub(`db:sources`, this.onSources.bind(this), this.signal);
+        }
     }
-    subs() {
-        this.addEventListener(`pointerup`, this.onPointerup.bind(this), this.signal);
+    disconnectedCallback() {
+        this.abortController.abort();
     }
-    onPointerup() {
-        this.incrementActive();
+    onSources(value) {
+        const index = parseInt(value[this.key] ?? this.activeIndex);
+        // console.log(`:onSources ${index} === ${this.activeIndex}`);
+        if(index === this.activeIndex) return;
+        this.activeIndex = index;
         this.render();
     }
+    onSwitch() {
+        this.incrementActive();
+        this.render();
+
+        if(this.persistance) {
+            this.backup();
+        }
+    }
+    backup() {
+        const update = {};
+        update[this.key] = this.activeIndex;
+        xf.dispatch(`sources`, update);
+    }
     incrementActive() {
-        this.active = (this.active + 1) % Math.max(this.$items.length, 1);
+        this.activeIndex = (this.activeIndex + 1) % Math.max(this.$items.length, 1);
     }
     render() {
         this.$items.forEach(($item, i) => {
-            if(equals(i, this.active)) {
+            if(equals(i, this.activeIndex)) {
                 $item.classList.add('active');
             } else {
                 $item.classList.remove('active');
@@ -603,7 +680,6 @@ class ZStack extends DataView {
 
 customElements.define('z-stack', ZStack);
 
-customElements.define('power-target', PowerTarget);
 
 class SlopeTarget extends DataView {
     getDefaults() {
@@ -722,6 +798,7 @@ class PowerValue extends DataView {
         xf.sub(`${this.prop}`, this.onUpdate.bind(this), this.signal);
     }
     transform(state) {
+        this.style = 'color: #F8C73A';
         return Math.round(state);
     }
 }
@@ -738,7 +815,7 @@ class PowerAvg extends DataView {
         xf.sub(`${this.prop}`, this.onUpdate.bind(this), this.signal);
     }
     transform(state) {
-        return Math.round(state);
+        return Math.ceil(state);
     }
 }
 
@@ -754,7 +831,7 @@ class PowerLap extends DataView {
         xf.sub(`${this.prop}`, this.onUpdate.bind(this), this.signal);
     }
     transform(state) {
-        return Math.round(state);
+        return Math.ceil(state);
     }
 }
 
@@ -994,27 +1071,6 @@ class InstantPowerGraph extends HTMLElement {
 }
 
 customElements.define('instant-power-graph', InstantPowerGraph);
-
-
-class PowerGraph extends HTMLElement {
-    constructor() {
-        super();
-    }
-
-    toBar(power) {
-        const zone = models.ftp.powerToZone(this.value).name;
-        const height = this.powerToHeight();
-    }
-    powerToHeight(power) {
-        return 100;
-    }
-    render(power) {
-        this.insertAdjacentHTML('beforeend', this.toBar(power));
-        this.barsCount += 1;
-    }
-}
-
-customElements.define('power-graph', PowerGraph);
 
 
 class SwitchGroup extends HTMLElement {
@@ -1531,7 +1587,9 @@ customElements.define('virtual-state-source', VirtualStateSource);
 class AutoPause extends DataView {
     postInit() {
         this.effect  = 'sources';
+        this.key     = 'autoPause';
         this.state   = { autoPause: false };
+        this.values  = {on: {autoPause: true}, off: {autoPause: false}};
     }
     getDefaults() {
         return {
@@ -1544,14 +1602,14 @@ class AutoPause extends DataView {
         this.addEventListener('pointerup', this.onEffect.bind(this), this.signal);
     }
     onUpdate(value) {
-        this.state = value.autoPause;
+        this.state = value[this.key];
         this.render();
     }
     onEffect() {
         if(equals(this.state, true)) {
-            xf.dispatch(`${this.effect}`, {autoPause: false});
+            xf.dispatch(`${this.effect}`, this.values.off);
         } else {
-            xf.dispatch(`${this.effect}`, {autoPause: true});
+            xf.dispatch(`${this.effect}`, this.values.on);
         }
     }
     render() {
@@ -1560,6 +1618,17 @@ class AutoPause extends DataView {
 }
 
 customElements.define('auto-pause', AutoPause);
+
+class AutoStart extends AutoPause {
+    postInit() {
+        this.effect  = 'sources';
+        this.key     = 'autoStart';
+        this.state   = { autoStart: true };
+        this.values  = {on: {autoStart: true}, off: {autoStart: false}};
+    }
+}
+
+customElements.define('auto-start', AutoStart);
 
 class Theme extends DataView {
     postInit() {

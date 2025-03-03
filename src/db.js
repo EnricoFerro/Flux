@@ -103,6 +103,8 @@ let db = {
     services: {strava: false, intervals: false, trainingPeaks: false},
 };
 
+
+
 xf.create(db);
 
 // Data Screen
@@ -307,30 +309,24 @@ xf.reg('ui:workout:upload', async function(files, db) {
 
 });
 xf.reg('watch:stopped', (_, db) => {
-    models.activity.createFromCurrent(db);
+    try {
+        models.activity.createFromCurrent(db);
+        xf.dispatch('activity:save:success');
+    } catch (err) {
+        console.error(`Error on activity save: `, err);
+        xf.dispatch('activity:save:fail');
+    }
+
+});
+xf.reg('activity:save:success', (e, db) => {
+    models.session.reset(db);
 });
 xf.sub('ui:activity:upload:by:id', (id) => {
     models.activity.upload(id);
 });
 // download the current activity as a .fit file
 xf.reg('ui:activity:save', (_, db) => {
-    try {
-        models.workout.download(db);
-        xf.dispatch('activity:save:success');
-    } catch (err) {
-        console.error(`Error on activity save: `, err);
-        xf.dispatch('activity:save:fail');
-    }
-});
-xf.reg('activity:save:success', (e, db) => {
-    // file:download:activity
-    // reset db session:
-    db.records = [];
-    db.events = [];
-    db.laps = [];
-    db.resistanceTarget = 0;
-    db.slopeTarget = 0;
-    db.powerTarget = 0;
+    xf.dispatch(`ui:page-set`, 'workouts');
 });
 
 xf.reg('course:index', (index, db) => {
@@ -416,11 +412,9 @@ xf.reg('app:start', async function(_, db) {
     models.api.start();
     // TODO: remove
     // xf.dispatch(`ui:page-set`, 'workouts');
-    // xf.dispatch(`action:planned`, ':intervals:wod');
 
     // TRAINER MOCK
     // trainerMock.init();
-    // models.activity.test();
 });
 
 function start () {
@@ -428,13 +422,13 @@ function start () {
     xf.dispatch('db:start');
 
     // UI test
-    // setTimeout(function() {
+    // setInterval(function() {
     //     xf.dispatch('watch:elapsed', 1);
     //     xf.dispatch('power', 180);
     //     xf.dispatch('cadence', 80);
-    //     xf.dispatch('heartRate', 130);
-    //     xf.dispatch('smo2', 83.17);
-    //     xf.dispatch('thb', 11.14);
+    //     xf.dispatch('heartRate', 140 + (Math.random() * 10));
+    //     xf.dispatch('smo2', 71.17); // + (Math.random() * 10));
+    //     xf.dispatch('thb', 11.14); // + (Math.random() / 2));
     //     xf.dispatch('coreBodyTemperature', 38.12);
     //     xf.dispatch('skinTemperature', 38.47);
     // }, 1000);

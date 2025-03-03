@@ -1,8 +1,8 @@
-import { xf, exists, existance, empty, equals, mavg,
+import { xf, exists, existance, empty, equals, mavg, avg, max,
          first, second, last, clamp, toFixed, isArray,
          isString, isObject } from '../functions.js';
 
-import { inRange, dateToDashString } from '../utils.js';
+import { inRange, dateToDashString, timeDiff, pad } from '../utils.js';
 
 import { LocalStorageItem } from '../storage/local-storage.js';
 import { idb } from '../storage/idb.js';
@@ -16,6 +16,7 @@ import { Model as Cycling } from '../physics.js';
 import { fit } from '../fit/fit.js';
 
 import { Device, Status, ControlMode, } from '../ble/enums.js';
+import { TimerStatus, EventType, } from '../activity/enums.js';
 
 class Model {
     constructor(args = {}) {
@@ -179,6 +180,7 @@ class Sources extends Model {
     }
     defaultValue() {
         const sources = {
+            // device data source map
             power:        'ble:controllable',
             cadence:      'ble:controllable',
             speed:        'ble:controllable',
@@ -188,9 +190,24 @@ class Sources extends Model {
             thb:          'ble:smo2',
             coreBodyTemperature: 'ble:coreTemp',
             skinTemperature:     'ble:coreTemp',
+
+            // settings
             virtualState: 'power',
-            autoPause:    false,
-            theme:        'DARK'
+            autoPause:    true,
+            autoStart:    true,
+            theme:        'DARK',
+
+            // data tile settings
+            // ['power1s', 'power3s']
+            powerZStack: 0,
+            // ['heartRate', 'heartRateLap', 'heartRateAvg']
+            heartRateZStack: 0,
+            // ['cadence', 'cadenceLap', 'cadenceAvg', 'cadenceTarget']
+            cadenceZStack: 0,
+            // ['powerAvg', 'powerLap', 'kcal']
+            kcalZStack: 0,
+            // ['graph', 'power']
+            graphZStack: 0,
         };
         return sources;
     }
@@ -933,11 +950,130 @@ function Session(args = {}) {
         return session;
     }
 
+    function reset(db) {
+        db.records = [];
+        db.lap = [];
+        db.laps = [];
+        db.events = [];
+        db.lapStartTime = false;
+        db.rrInterval = [];
+
+        db.elapsed = 0;
+        db.lapTime = 0;
+        db.stepTime = 0;
+        db.intervalIndex = 0;
+        db.stepIndex = 0;
+        db.intervalDuration = 0;
+        db.stepDuration = 0;
+
+        db.resistanceTarget = 0;
+        db.slopeTarget = 0;
+        db.powerTarget = 0;
+        db.position_lat = 0;
+        db.position_long = 0;
+        db.altitude = virtualState.altitude;
+        db.distance = virtualState.distance;
+        db.ascent = virtualState.ascent;
+        db.powerLap = powerLap.default;
+        db.heartRateLap = heartRateLap.default;
+        db.cadenceLap = cadenceLap.default;
+        db.kcal = kcal.default;
+        db.powerAvg = powerAvg.default;
+        db.cadenceAvg = cadenceAvg.default;
+        db.heartRateAvg = heartRateAvg.default;
+        db.powerLapCount = powerLap.count;
+        db.heartRateLapCount = heartRateLap.count;
+        db.cadenceLapCount = cadenceLap.count;
+        db.powerAvgCount = powerAvg.count;
+        db.cadenceAvgCount = cadenceAvg.count;
+        db.heartRateAvgCount = heartRateAvg.count;
+    }
+
+    function elapsed(x, db) {
+        if(equals(db.watchStatus, TimerStatus.stopped)) {
+            db.elapsed   = x;
+            return;
+        };
+
+        db.elapsed = x;
+
+        const speed = equals(db.sources.virtualState, 'speed') ?
+                    db.speed :
+                    db.speedVirtual;
+
+        const record = {
+            timestamp:  Date.now(),
+            power:      db.power1s,
+            cadence:    db.cadence,
+            speed:      speed,
+            heart_rate: db.heartRate,
+            distance:   db.distance,
+            grade:      db.slopeTarget,
+            altitude:   db.altitude,
+            position_lat:                 db.position_lat,
+            position_long:                db.position_long,
+            saturated_hemoglobin_percent: db.smo2,
+            total_hemoglobin_conc:        db.thb,
+            core_temperature:             db.coreBodyTemperature,
+            skin_temperature:             db.skinTemperature,
+            device_index:                 0,
+        };
+
+        db.records.push(record);
+        if(!empty(db.rrInterval)) {
+            db.records.push({time: pad(db.rrInterval, 5, 0xFFFF)});
+        }
+
+        db.lap.push(record);
+
+        if(equals(db.elapsed % 60, 0)) {
+            // models.session.backup(db);
+            backup(db);
+            console.log(`backing up of ${db.records.length} records ...`);
+        }
+    }
+
+    function lap(x, db) {
+        let timeEnd   = Date.now();
+        let timeStart = db.lapStartTime;
+        let elapsed   = timeDiff(timeStart, timeEnd);
+
+        if(elapsed > 0) {
+            const lap = {
+                timestamp:        timeEnd,
+                start_time:       timeStart,
+                totalElapsedTime: elapsed,
+                avgPower:         db.powerLap,
+                maxPower:         max(db.lap, 'power'),
+                avgCadence:       Math.round(avg(db.lap, 'cadence')),
+                avgHeartRate:     Math.round(avg(db.lap, 'heart_rate')),
+                saturated_hemoglobin_percent: toFixed(avg(db.lap, 'saturated_hemoglobin_percent'), 2),
+                total_hemoglobin_conc: toFixed(avg(db.lap, 'total_hemoglobin_conc'), 2),
+                core_temperature: toFixed(avg(db.lap, 'core_temperature'), 2),
+                skin_temperature: toFixed(avg(db.lap, 'skin_temperature'), 2)
+            };
+
+            db.laps.push(lap);
+            db.lap = [];
+        }
+        db.lapStartTime = timeEnd + 0;
+    }
+
+    function event(x, db) {
+        if(!empty(db.events) && equals(last(db.events).type, x.type)) return;
+        db.events.push(x);
+    }
+
     return Object.freeze({
         backup,
         restore,
+        reset,
         sessionToDb,
         dbToSession,
+
+        elapsed,
+        lap,
+        event,
     });
 }
 
@@ -1298,7 +1434,7 @@ class VirtualState extends MetaProp {
         this.lastUpdate = now;
 
         if(equals(dt, 0)) {
-            console.warn(`dt: ${dt}, s: ${this.speed}`);
+            // console.warn(`dt: ${dt}, s: ${this.speed}`);
             return;
         };
 
