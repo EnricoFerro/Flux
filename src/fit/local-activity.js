@@ -105,7 +105,24 @@ function LocalActivity(args = {}) {
         return type.timestamp.elapsed(start_time, timestamp);
     }
 
-    // Lap -> Int
+
+
+    // {
+    //     timestamp: Int,
+    //     start_time: Int,
+    //     totalElapsedTime: Int,
+    //     avgPower: Int,
+    //     maxPower: Int,
+    //     avgCadence: Double,
+    //     avgHeartRate: Double,
+    //     saturated_hemoglobin_percent: Double,
+    //     total_hemoglobin_conc: Double,
+    //     core_temperature: Double,
+    //     skin_temperature: Double
+    // },
+    // [{ timestamp: Int, type: EventType, }]
+    // ->
+    // Int
     function calcLapTotalTimerTime(lap, events) {
         const _lap = expect(lap, `calcLapTotalTimerTime needs lap: Lap.`);
         const _events = events ?? [];
@@ -137,7 +154,22 @@ function LocalActivity(args = {}) {
         return elapsedTime - Math.max(0, Math.min(pausedTime, elapsedTime));
     }
 
-    // Lap -> Int
+
+    // {
+    //     timestamp: Int,
+    //     start_time: Int,
+    //     totalElapsedTime: Int,
+    //     avgPower: Int,
+    //     maxPower: Int,
+    //     avgCadence: Double,
+    //     avgHeartRate: Double,
+    //     saturated_hemoglobin_percent: Double,
+    //     total_hemoglobin_conc: Double,
+    //     core_temperature: Double,
+    //     skin_temperature: Double
+    // },
+    // ->
+    // Int
     function calcLapTotalElapsedTime(lap) {
         return type.timestamp.elapsed(lap.start_time, lap.timestamp);
     }
@@ -190,6 +222,53 @@ function LocalActivity(args = {}) {
         return stats;
     }
 
+    function timestampToDate(x) {
+        const timeKeys = ['time_created', 'start_time', 'timestamp'];
+        for(let timeKey of timeKeys) {
+            if(x[timeKey]) {
+                x[timeKey] = new Date(x[timeKey]);
+            }
+        }
+        return x;
+    }
+
+    function printAppData(records, laps, events) {
+        const _records = window.structuredClone(records);
+        const _laps = window.structuredClone(laps);
+        const _events = window.structuredClone(events);
+        console.log('----');
+        console.log('records');
+        console.log(_records.map(timestampToDate));
+        // console.log(records);
+        console.log('laps');
+        console.log(_laps.map(timestampToDate));
+        // console.log(laps);
+        console.log('events');
+        console.log(_events.map(timestampToDate));
+        // console.log(events);
+        console.log('----');
+    }
+
+    function printFITjs(structure) {
+        const select = ['record', 'event', 'lap', 'session', 'activity'];
+
+        console.log('----');
+        const _structure = window.structuredClone(structure);
+        const _filtered = [];
+        for(let record of _structure) {
+            if(record.type === "data") {
+                if(record.fields) {
+                    timestampToDate(record.fields);
+                }
+                if(select.includes(record.name)) {
+                    _filtered.push(record);
+                }
+            }
+        }
+        console.log(_filtered);
+        console.log('----');
+    }
+
     // {records: [{<field>: Any}], laps: [{<field>: Any}]}
     // ->
     // [FITjs]
@@ -199,9 +278,10 @@ function LocalActivity(args = {}) {
         const events = args.events ?? [];
         const hrvs = args.hrvs ?? [];
 
-        const activity_start_time = first(events)?.start_time ?? first(records).timestamp;
-        const time_created = last(laps)?.timestamp ?? last(records)?.timestamp;
-        const startTime = Utils.convertDateToDateTime(new Date(time_created));
+        // printAppData(records, laps, events);
+
+        const activity_start_time = first(events)?.start_time ?? findFirstRecord(records).timestamp;
+        const time_created = last(laps)?.timestamp ?? findLastRecord(records)?.timestamp;
         const timestamp    = time_created;
         const total_elapsed_time = calcTotalElapsedTime({records, laps, events});
         const total_timer_time = calcTotalTimerTime({records, events});
@@ -254,6 +334,11 @@ function LocalActivity(args = {}) {
                 total_timer_time,
             })
         ];
+
+        const header = first(structure);
+        header.dataSize = getSize(structure).dataSize;
+
+        // printFITjs(structure);
 
         return structure;
     }

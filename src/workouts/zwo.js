@@ -334,19 +334,26 @@ function Warmup(args = {}) {
     }, args.spec);
 
     function toInterval(element) {
-        const duration  = element.Duration;
-        const powerLow  = element.PowerLow;
-        const powerHigh = element.PowerHigh;
-        const cadence   = element.Cadence;
+        const duration    = element.Duration;
+        const powerLow    = element.PowerLow ?? element.Power;
+        const powerHigh   = element.PowerHigh ?? element.Power;
+        const cadence     = element.Cadence;
+        const cadenceLow  = element.CadenceLow;
+        const cadenceHigh = element.CadenceHigh;
 
         const stepsCount = parseInt(duration / timeDx);
         const powerDx    = (powerHigh - powerLow) / (stepsCount - 1);
+        const cadenceDx  = (cadenceHigh - cadenceLow) / (stepsCount - 1);
 
-        let steps     = [];
-        let stepPower = powerLow;
+        let steps       = [];
+        let stepPower   = powerLow;
+        let stepCadence = cadenceLow;
 
         for(let i = 0; i < stepsCount; i++) {
-            if(exists(cadence)) {
+            if(exists(cadenceLow) && exists(cadenceHigh)) {
+                steps.push({duration: timeDx, power: stepPower, cadence: Math.round(stepCadence),});
+                stepCadence = (stepCadence + cadenceDx);
+            } else if(exists(cadence)) {
                 steps.push({duration: timeDx, power: stepPower, cadence,});
             } else {
                 steps.push({duration: timeDx, power: stepPower});

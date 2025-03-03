@@ -1,4 +1,4 @@
-import { xf, once, print, } from '../functions.js';
+import { xf, once, print, exists, } from '../functions.js';
 import { isoDate, } from '../utils.js';
 import { OAuthService, DialogMsg, stateParam, } from './enums.js';
 import config from './config.js';
@@ -208,6 +208,12 @@ function Intervals(args = {}) {
                     return ':no-data';
                 } 
                 return json[0];
+                /*
+                const data = await response.json();
+                xf.dispatch('action:planned', ':intervals:wod:success');
+                console.log(data);
+                return data.filter((item) => exists(item.workout_file_base64));
+                */
             } else {
                 xf.dispatch('action:planned', ':intervals:wod:fail');
                 if(response.status === 403 || response.status === 401) {

@@ -118,7 +118,7 @@ class SourceSwitch extends HTMLElement {
         this.path      = this.getAttribute('for');
         this.value     = this.getAttribute('use');
         this.$dataView = this.querySelector('.data-view');
-        this.$toggle   = this.querySelector('toggle-button');
+        this.$toggle   = this.querySelector('.toggle--button');
 
         xf.sub(`${this.prop}`, this.onUpdate.bind(this), this.signal);
         this.addEventListener('pointerup', this.onEffect.bind(this), this.signal);

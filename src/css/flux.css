@@ -154,16 +154,17 @@ input[type="number"] {
 
 .file-btn {
     position: relative;
-    height: 30px;
-    margin: 0px auto 20px;
+    height: 3.0em;
+    margin: 0px auto 2.0em;
     color: var(--gray);
 }
 
 .file-btn-native {
+    font-size: var(--workout--description-font-size);
     position: relative;
-    margin-left: 32px;
-    line-height: 27px;
-    height: 30px;
+    margin-left: 3.2em;
+    line-height: 2.7em;
+    height: 3.0em;
     background: none;
     z-index: 0;
 }
@@ -911,6 +912,33 @@ div.graph--bar-group {
     z-index: 2;
 }
 
+/* #graph-moxy { */
+/*     display: none; */
+/*     overflow: hidden; */
+/* } */
+
+#moxy-svg {
+    width: 100%;
+    height: var(--graph-total-height);
+}
+
+.moxy--path {
+    fill: none;
+    stroke-width: 1;
+}
+
+#moxy-path-smo2 {
+    /* stroke: #22976C; */
+    /* stroke: #57C057; */
+}
+#moxy-path-thb {
+    /* stroke: #FC7521; */
+    /* stroke: #FF663A; */
+}
+#moxy-path-hr {
+    /* stroke: #FE340B; */
+}
+
 #workout-list svg.graph--bar-group {
     height: var(--graph-height);
     height: 8em;
@@ -1066,6 +1094,27 @@ div.graph--bar-group {
     z-index: 1;
     pointer-events: none;
 }
+
+auto-start-counter {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--progress);
+
+    justify-content: center;
+    align-items: center;
+    font-size: 2em;
+    font-weight: bold;
+
+    &.active {
+        display: flex;
+    }
+}
 /* END Graphs */
 
 /* Target Controls */
@@ -1073,6 +1122,7 @@ div.graph--bar-group {
     font-size: 1rem;
     padding: 0 1em;
     --inner-max-width: 300px;
+    --mode-selector-font-size: 1em;
     --mode-selector-height: 3rem;
     --mode-selector-margin: 0.8em auto;
     --mode-selector-padding: 0 1em;
@@ -1101,7 +1151,7 @@ div.graph--bar-group {
     max-width: 100%;
     height: var(--mode-selector-height);
     margin: var(--mode-selector-margin);
-    font-size: 1em;
+    font-size: var(--mode-selector-font-size);
     text-transform: uppercase;
 }
 
@@ -1319,7 +1369,7 @@ div.graph--bar-group {
     --workout--type-font-size: 1.4em;
     --workout--duration-font-size: 1.4em;
     --workout--description-font-size: 1.4em;
-    --inner-max-width: 60rem;
+    --inner-max-width: 60em;
     --size--icon--global: 2.4em;
     --list--graph--height: 8em;
 
@@ -1428,9 +1478,9 @@ div.graph--bar-group {
     .optional--actions {
         position: absolute;
         display: grid;
-        top: 0;
+        top: 0.1em;
         right: 0;
-        bottom: 0;
+        bottom: 0.1em;
         width: 8em;
         background-color: var(--red);
         z-index: 0;
@@ -1458,7 +1508,7 @@ div.graph--bar-group {
     z-index: 1;
 }
 .options-show {
-    transform: translateX(-8rem);
+    transform: translateX(-8em);
 }
 
 .options-hide {
@@ -1468,9 +1518,9 @@ div.graph--bar-group {
 .workout--actions {
     position: absolute;
     display: grid;
-    top: 0;
+    top: 0.1em;
     right: 0;
-    bottom: 0;
+    bottom: 0.1em;
     width: 8em;
     background-color: var(--red);
     z-index: 0;
@@ -1484,8 +1534,8 @@ div.graph--bar-group {
 }
 
 .workout--options {
-    display: flex;
-    justify-content: center;
+    /* display: flex; */
+    /* justify-content: center; */
 }
 
 .workout--short-info {
@@ -1515,6 +1565,7 @@ div.graph--bar-group {
     overflow: hidden;
     text-overflow: ellipsis;
     text-wrap: nowrap;
+    line-height: 1.4em;
 }
 
 .workout--type {
@@ -1524,6 +1575,7 @@ div.graph--bar-group {
     overflow: hidden;
     text-overflow: ellipsis;
     text-wrap: nowrap;
+    line-height: 1.4em;
 }
 
 .workout--duration {
@@ -1637,6 +1689,8 @@ div.graph--bar-group {
 .header--tab--group {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    max-width: 48em;
+    margin: 0 auto;
 }
 
 .library--switch--group {
@@ -1711,7 +1765,7 @@ navigation-action {
 /* Editor */
 .editor-cont {
     --editor-max-width: 48em;
-    font-size: 1rem;
+    /* font-size: 1rem; */
     width: 100%;
 }
 
@@ -1813,6 +1867,8 @@ navigation-action {
 }
 
 .editor--icon {
+    width: var(--size--icon--global);
+    height: var(--size--icon--global);
     margin: 1em 2em;
     cursor: pointer;
     fill: var(--foreground-color);
@@ -1921,11 +1977,11 @@ navigation-action {
     align-items: center;
     justify-content: center;
     max-width: var(--inner-max-width);
-    margin: 0 auto 10px;
+    margin: 0 auto 1em;
 }
 
 .settings-switch-btn-cont {
-    margin: 10px auto;
+    margin: 0em auto;
     font-size: 1em;
 }
 
@@ -2074,7 +2130,7 @@ navigation-action {
 
 .device-card--header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 3fr 1fr;
     grid-template-rows: 1fr;
 
     .device-card--header--label {
@@ -2093,8 +2149,8 @@ navigation-action {
 }
 
 battery-level {
-    width: 2.4rem;
-    height: 1.2rem;
+    width: 2.4em;
+    height: 1.2em;
     justify-self: right;
     align-self: center;
     margin: 0 1em 0 0;
@@ -2106,20 +2162,20 @@ battery-level {
         right: 0;
         bottom: 0;
         /* width: 100%; */
-        height: 0.8rem;
+        height: 1.0em;
     }
 
     &::before {
         content: '';
         position: absolute;
-        left: -0.4rem;
-        top: 0.1rem;
-        width: 0.2rem;
-        height: 0.6rem;
+        left: -0.4em;
+        top: 0.1em;
+        width: 0.2em;
+        height: 0.6em;
     }
 
     &.ok {
-        border: 0.2rem solid var(--foreground-color);
+        border: 2px solid var(--foreground-color);
 
         .battery--level {
             background-color: var(--foreground-color);
@@ -2129,7 +2185,7 @@ battery-level {
         }
     }
     &.low {
-        border: 0.2rem solid var(--yellow);
+        border: 2px solid var(--yellow);
 
         .battery--level {
             background-color: var(--yellow);
@@ -2139,7 +2195,7 @@ battery-level {
         }
     }
     &.critical {
-        border: 0.2rem solid var(--red);
+        border: 2px solid var(--red);
 
         .battery--level {
             background-color: var(--red);
@@ -2150,36 +2206,28 @@ battery-level {
     }
 }
 
-.flat-toggle {
+.toggle--button {
     position: relative;
-    display: block;
-    width: 3.3rem;
-    height: 2rem;
-    margin: 0.5rem auto;
-    border-radius: 1rem;
-    border: 0.3rem solid var(--toogle-inactive-color);
+    width: 3.3em;
+    height: 2.0em;
+    margin: 0.5em auto;
     transition: .4s;
 
-    .toggle {
-        position: absolute;
-        top: 0.20rem;
-        left: 0.2rem;
-        width: 1rem;
-        height: 1rem;
-        background-color: var(--toogle-inactive-color);
-        border-radius: 50%;
-        transition: .4s;
+    .on {
+        display: none;
+    }
+    .off {
+        display: block;
     }
 
     &.active {
-        border: 0.3rem solid var(--toogle-active-color);
-
-        .toggle {
-            background-color: var(--toogle-active-color);
-            left: 1.50rem;
+        .on {
+            display: block;
+        }
+        .off {
+            display: none;
         }
     }
-
 }
 
 
@@ -2269,15 +2317,15 @@ battery-level {
 .auth, .profile {
     display: block;
     /* min-height: 26rem; */
-    margin: 3rem auto 0;
+    margin: 3em auto 0;
 
     .auth--tab--controls {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        height: 3rem;
+        height: 3em;
     }
     .auth--tab--switch {
-        height: 3rem;
+        height: 3em;
         color: var(--foreground-color-inactive);
 
         .form--header {
@@ -2293,22 +2341,24 @@ battery-level {
     }
 
     .input {
-        margin: 1rem 0;
-        padding: 0 1rem;
-        height: 3rem;
+        font-size: 1em;
+        margin: 1em 0;
+        padding: 0 1em;
+        height: 3em;
         color: var(--dark);
         background-color: #fff;
         border: none;
     }
     .btn {
-        margin: 1rem 0;
-        padding: 0 1rem;
-        height: 3rem;
+        font-size: 1em;
+        margin: 1em 0;
+        padding: 0 1em;
+        height: 3em;
         text-transform: none;
     }
 
     .form--header {
-        height: 3rem
+        height: 3em
     }
     a {
         color: #bbb;
@@ -2316,11 +2366,11 @@ battery-level {
         cursor: pointer;
     }
     a, p {
-        font-size: 1.2rem;
+        font-size: 1.2em;
     }
     .form--header {
-        font-size: 1.2rem;
-        line-height: 3rem;
+        font-size: 1.2em;
+        line-height: 3em;
         text-transform: uppercase;
     }
     #passkey--forms.active,
@@ -2358,19 +2408,20 @@ battery-level {
         color: var(--red);
     }
     .tab--button {
-        font-size: 1.2rem;
-        line-height: 3rem;
-        margin: 1rem;
-        height: 3rem;
+        font-size: 1.2em;
+        height: 1.4em;
+        margin: 1em;
+        line-height: 1.4em;
         text-decoration: underline;
         cursor: pointer;
     }
     .form--submit--section {
         display: flex;
         justify-content: center;
+        align-items: center;
     }
     .webauthn--section {
-        margin: 1rem 0;
+        margin: 1em 0;
     }
     .input[name="username"] {
         display: none;
@@ -2475,13 +2526,13 @@ workout-graph-svg {
 
 .option {
     display: grid;
-    grid-template-columns: 1fr 4fr;
+    grid-template-columns: 2fr 4fr;
     align-items: center;
 }
 .option--name {
     text-align: left;
     font-size: 1.2em;
-    line-height: 4rem;
+    line-height: 3em;
     text-transform: uppercase;
 }
 .option--value {
@@ -2491,24 +2542,17 @@ workout-graph-svg {
 }
 
 .sound--row {
-    display: flex;
-    vertical-align: baseline;
-    justify-content: center;
-    margin: 0em auto;
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
 }
-.sound--row--item {
-    max-width: 25%;
-    width: 7rem;
-    height: 3rem;
-    line-height: 3rem;
-}
-.sound--control {
+.sound--item {
+    place-self: center;
     cursor: pointer;
     fill: var(--foreground-color);
 }
 
 .sound--volume {
-    font-size: 2rem;
     font-weight: bold;
 }
 
@@ -2521,10 +2565,14 @@ activity-item {
         position: relative;
         background-color: var(--background-color);
         z-index: 1;
+
+        .control--btn--icon {
+            display: block;
+        }
     }
 
     &.options .activity--cont {
-        transform: translateX(-8rem);
+        transform: translateX(-8em);
     }
     &.expand .activity--info--full {
         display: grid;
@@ -2547,7 +2595,7 @@ activity-item {
         grid-template-columns: 50% 1fr 1fr;
         justify-content: center;
         align-items: center;
-        line-height: 4rem;
+        line-height: 4em;
         cursor: pointer;
     }
 }
@@ -2579,8 +2627,8 @@ activity-item {
     display: grid ;
     width: 8em;
     position: absolute;
-    top: 0;
-    bottom: 0;
+    top: 0.1em;
+    bottom: 0.1em;
     right: 0;
     z-index: 0;
     background-color: var(--red);
@@ -2592,23 +2640,23 @@ activity-item {
     }
 }
 
-.activity--options--button {
-    justify-self: center;
-}
 .activity--actions {
     display: none;
     display: grid;
     grid-template-columns: 40% 1fr 1fr 1fr 1fr;
     /* grid-template-columns: 8rem 8rem 1fr 1fr 8rem 4rem; */
     align-items: center;
-    line-height: 4rem;
-    height: 4rem;
+    line-height: 4em;
+    height: 4em;
 
     .action--image {
         justify-self: center;
     }
     .action--intervals {
         justify-self: left;
+    }
+    .control--btn--icon {
+        justify-self: center;
     }
 }
 .activity--name {
@@ -2639,8 +2687,8 @@ activity-item {
 }
 .activity--icon {
     display: block;
-    width: 2.4rem;
-    height: 2.4rem;
+    width: var(--size--icon--global);
+    height: var(--size--icon--global);
     fill: var(--foreground-color);
 }
 .activity--upload {
@@ -2729,7 +2777,7 @@ dialog {
 
 /* About */
 #about {
-    font-size: 1.2rem;
+    font-size: 1.2em;
     margin: 10px auto 0;
     padding: 10px 10px;
     max-width: var(--inner-max-width);
@@ -3088,9 +3136,14 @@ and (min-height: 850px) {
     }
 
     #targets {
-        --number-input-height: 5rem;
-        --mode-selector-margin: 2em auto;
         --inner-max-width: 50em;
+
+        --mode-selector-font-size: 1.4em;
+        --mode-selector-margin: 1.2em auto;
+        --number-input-height: 2.2em;
+
+        --number-input-font-size: 2.4em;
+        --number-input-value-font-size: 2.4em;
     }
 
     .watch {
@@ -3098,10 +3151,6 @@ and (min-height: 850px) {
     }
 
     #settings-page {
-        font-size: 1.2rem;
-    }
-
-    .editor-cont {
         font-size: 1.2rem;
     }
 
@@ -3114,8 +3163,34 @@ and (min-height: 850px) {
 and (min-width: 1900px)
 and (min-height: 900px) {
     /* FHD */
+
+    #home-page-wrapper {
+        grid-template-rows: 6em 2.5fr 1fr 1fr 16em 16em;
+    }
+
+    .connections-header {
+        font-size: 1.6rem;
+    }
+
     .data-tiles {
         font-size: 3.2rem;
+    }
+
+    #settings-page {
+        font-size: 1.6rem;
+    }
+
+    #workouts-page {
+        font-size: 1.6rem;
+    }
+
+    .fixed-bottom {
+        font-size: 1.6rem;
+    }
+
+    .graph--heading {
+        font-size: 2em;
+        line-height: 2em;
     }
 }
 
@@ -3140,7 +3215,7 @@ and (min-height: 1200px) {
     }
 
     .graph--heading {
-        font-size: 1.8em;
+        font-size: 3em;
         line-height: 2.5em;
     }
 
@@ -3154,10 +3229,15 @@ and (min-height: 1200px) {
 
     #targets {
         font-size: 1.4rem;
-        --number-input-height: 6rem;
-        --mode-selector-margin: 2em auto;
+
+        --mode-selector-font-size: 1.4em;
+        /* --number-input-height: 6rem; */
+        --mode-selector-margin: 1em auto;
         --inner-max-width: 50em;
         --mode-selector-padding: 0 1em;
+
+        --number-input-font-size: 2em;
+        --number-input-value-font-size: 2em;
     }
 
     .fixed-bottom {
@@ -3173,10 +3253,6 @@ and (min-height: 1200px) {
     }
 
     #workouts-page {
-        font-size: 1.6rem;
-    }
-
-    .editor-cont {
         font-size: 1.6rem;
     }
 }
@@ -3204,22 +3280,16 @@ and (min-height: 1600px) {
 
     #targets {
         font-size: 2.4rem;
-        --number-input-height: 8rem;
-        --mode-selector-margin: 2em auto;
         --inner-max-width: 44em;
         --mode-selector-padding: 0 1em;
     }
 
     #settings-page {
-        font-size: 2.4rem;
+        font-size: 3.0rem;
     }
 
     #workouts-page {
-        font-size: 2.4rem;
-    }
-
-    .editor-cont {
-        font-size: 2.4rem;
+        font-size: 3.0rem;
     }
 
     .fixed-bottom {

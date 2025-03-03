@@ -227,7 +227,7 @@ class WorkoutGraph extends HTMLElement {
             const $parent = self;
             const height = $parent.getBoundingClientRect().height;
             const width = $parent.getBoundingClientRect().width;
-            const left = translate(distance, 0, totalDistance, 0, window.innerWidth);
+            const left = translate(distance, 0, totalDistance, 0, width);
             $dom.active.style.left   = `${left % width}px`;
             $dom.active.style.width  = `2px`;
             $dom.active.style.height = `${height}px`;
@@ -242,8 +242,8 @@ class WorkoutGraph extends HTMLElement {
         const self = this;
         this.lapTime = lapTime;
         if(equals(this.type, 'workout')) {
-        this.progress({index: self.index, dom: self.dom, parent: self, lapTime: self.lapTime});
-    }
+            this.progress({index: self.index, dom: self.dom, parent: self, lapTime: self.lapTime});
+        }
     }
     progress(args = {}) {
         if(this.workoutStatus === "done") {

@@ -56,10 +56,16 @@ function time() {
     return `${hours}:${minutes}:${seconds}:${milliseconds}`;
 }
 
-function isoDate(date = new Date()) {
-    const offset = date.getTimezoneOffset();
-    const d = new Date(date.getTime() - (offset*60*1000));
-    return date.toISOString().split('T')[0];
+function isoDate(date = new Date(), local = true) {
+    if(local) {
+        const day   = (date.getDate()).toString().padStart(2, '0');
+        const month = (date.getMonth()+1).toString().padStart(2, '0');
+        const year  = date.getFullYear().toString();
+        return `${year}-${month}-${day}`;
+    } else {
+        // toISOString returns always the utc date
+        return date.toISOString().split('T')[0];
+    }
 }
 
 function format(x, precision = 1000) {
@@ -235,6 +241,13 @@ function splitAt(xs, at) {
     },[]);
 }
 
+function pad(xs = [], length = 0, value = 0) {
+    for(let i = xs.length-1; i < length; i += 1) {
+        xs.push(value);
+    }
+    return xs;
+}
+
 function calculateCRC(uint8array, start, end) {
     const crcTable = [
         0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
@@ -292,6 +305,9 @@ export {
     kphToMps,
     mpsToKph,
     time,
+
+    // data
+    pad,
 
     // async
     backoff,
